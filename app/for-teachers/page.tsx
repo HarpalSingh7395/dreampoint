@@ -126,7 +126,7 @@ export default function ForTeachersPage() {
             
             <div>
               <label htmlFor="availability" className="block text-sm font-medium text-gray-700 mb-1">Time Availability</label>
-              <textarea id="availability" name="availability" rows="3" className="w-full border border-gray-300 rounded-md px-3 py-2"></textarea>
+              <textarea id="availability" name="availability" rows={3} className="w-full border border-gray-300 rounded-md px-3 py-2"></textarea>
             </div>
             
             <div>

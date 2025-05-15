@@ -185,10 +185,10 @@ export default function ForStudentsPage() {
               <span className="font-semibold">Contact us:</span> Reach out through our contact form, phone, or email to express your interest.
             </li>
             <li className="mb-3">
-              <span className="font-semibold">Needs assessment:</span> We'll discuss your academic requirements, preferred subjects, and learning goals.
+              <span className="font-semibold">Needs assessment:</span> {`We'll discuss your academic requirements, preferred subjects, and learning goals.`}
             </li>
             <li className="mb-3">
-              <span className="font-semibold">Teacher matching:</span> We'll match you with the most suitable teacher based on your requirements.
+              <span className="font-semibold">Teacher matching:</span> {`We'll match you with the most suitable teacher based on your requirements.`}
             </li>
             <li className="mb-3">
               <span className="font-semibold">Demo session:</span> Experience a free demonstration session with the assigned teacher.

@@ -1,6 +1,11 @@
 import Image from 'next/image';
 
-export default function TeacherCard({ name, qualification, experience, imageSrc }) {
+export default function TeacherCard({ name, qualification, experience, imageSrc }: {
+    name: string,
+    qualification: string,
+    experience: string,
+    imageSrc?: string,
+  }) {
   return (
     <div className="card text-center hover:bg-blue-50">
       <div className="mb-4 relative mx-auto rounded-full overflow-hidden w-32 h-32 border-4 border-blue-500">
