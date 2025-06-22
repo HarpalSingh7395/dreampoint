@@ -1,4 +1,4 @@
-import FeesTable from '../../components/FeesTable';
+import FeesTable from '@/components/FeesTable';
 import Link from 'next/link';
 
 export default function FeesPage() {

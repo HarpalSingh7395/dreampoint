@@ -1,8 +1,10 @@
 import Link from 'next/link';
+import SignedOut from './auth/SignedOut';
+import { buttonVariants } from './ui/button';
 
 export default function Hero() {
   return (
-    <section className="relative bg-gradient-to-r from-blue-600 to-blue-800 text-white overflow-hidden">
+    <section className="relative bg-linear-to-r from-blue-600 to-blue-800 text-white overflow-hidden">
       <div className="absolute inset-0 bg-black opacity-20"></div>
       <div className="container mx-auto px-4 py-24 relative z-10">
         <div className="max-w-3xl">
@@ -13,16 +15,20 @@ export default function Hero() {
             Expert tutoring for board exams and competitive exams (NEET, IIT-JEE). Personalized learning experiences for students of all grades.
           </p>
           <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
-            <Link href="/for-students" className="btn-primary">
+            <Link href="/for-students" className={buttonVariants({
+              variant: "secondary",
+            })}>
               Find a Tutor
             </Link>
-            <Link href="/for-teachers" className="bg-white text-blue-600 hover:bg-gray-100 font-bold py-3 px-6 rounded-lg transition duration-300">
-              Become a Tutor
-            </Link>
+            <SignedOut>
+              <Link href="/for-teachers" className="bg-white text-blue-600 hover:bg-gray-100 font-bold py-3 px-6 rounded-lg transition duration-300">
+                Become a Tutor
+              </Link>
+            </SignedOut>
           </div>
         </div>
       </div>
-      
+
       {/* Wave SVG at bottom */}
       <div className="absolute bottom-0 left-0 right-0">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 120" fill="#ffffff">

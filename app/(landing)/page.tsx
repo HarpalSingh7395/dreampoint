@@ -1,6 +1,6 @@
-import Hero from '../components/Hero';
-import ServiceCard from '../components/ServiceCard';
-import TeacherCard from '../components/TeacherCard';
+import Hero from '../../components/Hero';
+import ServiceCard from '../../components/ServiceCard';
+import TeacherCard from '../../components/TeacherCard';
 import Link from 'next/link';
 
 export default function Home() {
@@ -83,31 +83,31 @@ export default function Home() {
       {/* Why Choose Us Section */}
       <section className="py-20 bg-gray-50">
         <div className="container mx-auto px-4">
-          <h2 className="section-heading">Why Choose Dream Point</h2>
+          <h2 className="section-heading">Why Choose My Pathshaala</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12">
             <div className="bg-white p-8 rounded-lg shadow-lg">
               <h3 className="text-2xl font-bold mb-6 text-blue-600">Our Approach</h3>
               <ul className="space-y-4">
                 <li className="flex items-start">
-                  <svg className="h-6 w-6 mr-2 text-green-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="h-6 w-6 mr-2 text-green-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
                   <p className="text-gray-700">Experienced and qualified tutors with proven teaching expertise</p>
                 </li>
                 <li className="flex items-start">
-                  <svg className="h-6 w-6 mr-2 text-green-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="h-6 w-6 mr-2 text-green-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
                   <p className="text-gray-700">Personalized learning plans tailored to individual student needs</p>
                 </li>
                 <li className="flex items-start">
-                  <svg className="h-6 w-6 mr-2 text-green-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="h-6 w-6 mr-2 text-green-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
                   <p className="text-gray-700">Regular assessments and progress tracking</p>
                 </li>
                 <li className="flex items-start">
-                  <svg className="h-6 w-6 mr-2 text-green-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="h-6 w-6 mr-2 text-green-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
                   <p className="text-gray-700">Focus on conceptual clarity and practical application</p>
@@ -118,25 +118,25 @@ export default function Home() {
               <h3 className="text-2xl font-bold mb-6 text-blue-600">Our Results</h3>
               <ul className="space-y-4">
                 <li className="flex items-start">
-                  <svg className="h-6 w-6 mr-2 text-green-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="h-6 w-6 mr-2 text-green-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
                   <p className="text-gray-700">Consistent top performers in board examinations</p>
                 </li>
                 <li className="flex items-start">
-                  <svg className="h-6 w-6 mr-2 text-green-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="h-6 w-6 mr-2 text-green-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
                   <p className="text-gray-700">Excellent track record in competitive exams (NEET, IIT-JEE)</p>
                 </li>
                 <li className="flex items-start">
-                  <svg className="h-6 w-6 mr-2 text-green-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="h-6 w-6 mr-2 text-green-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
                   <p className="text-gray-700">Trusted by thousands of parents and students</p>
                 </li>
                 <li className="flex items-start">
-                  <svg className="h-6 w-6 mr-2 text-green-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="h-6 w-6 mr-2 text-green-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
                   <p className="text-gray-700">High student satisfaction and retention rate</p>
@@ -185,7 +185,7 @@ export default function Home() {
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-6">Ready to Excel in Your Studies?</h2>
           <p className="text-xl mb-8 max-w-3xl mx-auto text-blue-100">
-            Join Dream Point today and experience the difference our expert tutors can make in your academic journey.
+            Join My Pathshaala today and experience the difference our expert tutors can make in your academic journey.
           </p>
           <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
             <Link href="/for-students" className="bg-white text-blue-600 hover:bg-gray-100 font-bold py-3 px-8 rounded-lg transition duration-300">

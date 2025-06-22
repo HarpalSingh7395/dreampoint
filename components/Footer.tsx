@@ -8,8 +8,8 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
             <Link href="/" className="flex items-center space-x-2 mb-4">
-              <Image src="/images/logo.svg" alt="Dream Point Logo" width={40} height={40} />
-              <span className="text-xl font-bold text-white">Dream Point</span>
+              <Image src="/images/logo.svg" alt="My Pathshaala Logo" width={40} height={40} />
+              <span className="text-xl font-bold text-white">My Pathshaala</span>
             </Link>
             <p className="text-gray-400 mb-4">
               The most reliable platform for private home tutors and group tuition.
@@ -77,7 +77,7 @@ export default function Footer() {
                 <svg className="h-6 w-6 mr-2 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
-                <span className="text-gray-400">info@dreampoint.com</span>
+                <span className="text-gray-400">info@mypathshaala.com</span>
               </li>
             </ul>
           </div>
@@ -86,7 +86,7 @@ export default function Footer() {
       
       <div className="bg-gray-950 py-4">
         <div className="container mx-auto px-4 text-center text-gray-400">
-          <p>© {new Date().getFullYear()} Dream Point. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} My Pathshaala. All rights reserved.</p>
         </div>
       </div>
     </footer>
