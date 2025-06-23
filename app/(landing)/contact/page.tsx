@@ -50,7 +50,7 @@ export default function ContactPage() {
                 </div>
                 <div>
                   <h3 className="font-semibold">Address</h3>
-                  <p className="text-gray-600">Dream Point Education Center</p>
+                  <p className="text-gray-600">My Pathshaala Education Center</p>
                   <p className="text-gray-600">123 Education Street, City</p>
                   <p className="text-gray-600">State, PIN Code</p>
                 </div>
@@ -143,7 +143,7 @@ export default function ContactPage() {
               <div className="flex items-center">
                 <input type="checkbox" id="consent" name="consent" className="h-4 w-4 text-blue-600" required />
                 <label htmlFor="consent" className="ml-2 text-sm text-gray-700">
-                  I consent to Dream Point processing my personal data for responding to my inquiry.
+                  I consent to My Pathshaala processing my personal data for responding to my inquiry.
                 </label>
               </div>
               

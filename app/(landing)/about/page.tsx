@@ -33,16 +33,16 @@ export default function AboutPage() {
   return (
     <main className="container mx-auto px-4 py-8">
       <section className="mb-12">
-        <h1 className="text-3xl font-bold mb-6 text-center">About Dream Point</h1>
+        <h1 className="text-3xl font-bold mb-6 text-center">About My Pathshaala</h1>
         <div className="bg-white shadow-md rounded-lg p-6">
           <p className="mb-4">
-            Dream Point is one of the most reliable platforms for private home tutors and group tuition. We offer comprehensive academic solutions for students ranging from nursery to 12th grade, as well as preparation for competitive exams like NEET, IIT-JEE, Bank PO, SSC, NDA, and more.
+            My Pathshaala is one of the most reliable platforms for private home tutors and group tuition. We offer comprehensive academic solutions for students ranging from nursery to 12th grade, as well as preparation for competitive exams like NEET, IIT-JEE, Bank PO, SSC, NDA, and more.
           </p>
           <p className="mb-4">
             Our mission is to provide personalized educational support to students through experienced and qualified tutors. We take pride in our commitment to academic excellence and our ability to match students with the right teachers based on their specific needs.
           </p>
           <p>
-            With years of experience in the education field, Dream Point has established itself as a trusted name in home tuition and group tuition services, helping students achieve their academic goals and excel in their studies.
+            With years of experience in the education field, My Pathshaala has established itself as a trusted name in home tuition and group tuition services, helping students achieve their academic goals and excel in their studies.
           </p>
         </div>
       </section>
@@ -71,7 +71,7 @@ export default function AboutPage() {
       </section>
 
       <section>
-        <h2 className="text-2xl font-bold mb-6 text-center">Why Choose Dream Point?</h2>
+        <h2 className="text-2xl font-bold mb-6 text-center">Why Choose My Pathshaala?</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <div className="bg-white shadow-md rounded-lg p-6">
             <h3 className="text-xl font-bold mb-2">Qualified Teachers</h3>
