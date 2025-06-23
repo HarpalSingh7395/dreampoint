@@ -127,7 +127,7 @@ const ApplicationForm = () => {
   );
 };
 
-const FormField = ({ label, type, id, name, placeholder }: { label: string, type: string, id: string, name: string, placeholder: string }) => (
+const FormField = ({ label, type, id, name, placeholder }: { label: string, type: string, id: string, name: string, placeholder?: string }) => (
   <div>
     <label htmlFor={id} className="block text-sm font-bold text-gray-800 mb-2">
       {label}
