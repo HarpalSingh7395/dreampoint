@@ -55,7 +55,7 @@ export default function Header() {
             />
           </div>
           <div className="flex flex-col">
-            <span className="text-xl font-bold text-primary bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               My Pathshaala
             </span>
             <span className="text-xs text-muted-foreground hidden sm:block">
@@ -100,7 +100,7 @@ export default function Header() {
             </div>
           ) : (
             <div className="flex items-center space-x-2">
-              <Button variant="ghost" size="sm" asChild>
+              <Button variant="link" className='hover:no-underline' size="sm" asChild>
                 <Link href="/login">Sign In</Link>
               </Button>
               <Button size="sm" asChild>
