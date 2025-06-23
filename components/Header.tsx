@@ -103,7 +103,7 @@ export default function Header() {
               <Button variant="link" className='hover:no-underline' size="sm" asChild>
                 <Link href="/login">Sign In</Link>
               </Button>
-              <Button size="sm" asChild>
+              <Button size="sm" asChild variant={"gradient"}>
                 <Link href="/register">Get Started</Link>
               </Button>
             </div>
