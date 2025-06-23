@@ -32,7 +32,7 @@ export default function TeachersSection() {
                     </h2>
 
                     <p className="text-xl text-blue-900/80 max-w-3xl mx-auto leading-relaxed">
-                        Learn from the best minds in education. Our tutors are not just qualified - they're passionate mentors dedicated to your success.
+                        {`Learn from the best minds in education. Our tutors are not just qualified - they're passionate mentors dedicated to your success.`}
                     </p>
                 </div>
 
