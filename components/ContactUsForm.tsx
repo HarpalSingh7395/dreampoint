@@ -2,7 +2,7 @@
 
 import React from "react"
 import { useForm } from "react-hook-form"
-import { z } from "zod"
+import { z, infer as zodInfer } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import {
     Form,
@@ -25,13 +25,15 @@ const contactFormSchema = z.object({
     phoneNumber: z.string().min(1, "Phone number is required"),
     inquiryType: z.string().min(1, "Please select an inquiry type"),
     message: z.string().min(1, "Message is required"),
-    consent: z.literal(true, {
-        errorMap: () => ({ message: "You must give consent." }),
+    consent: z.boolean().refine(val => val === true, {
+        message: "You must give consent.",
     }),
 })
 
+type FormType = zodInfer<typeof contactFormSchema>
+
 export default function ContactUsForm() {
-    const form = useForm({
+    const form = useForm<FormType>({
         resolver: zodResolver(contactFormSchema),
         defaultValues: {
             firstName: "",
@@ -40,18 +42,18 @@ export default function ContactUsForm() {
             phoneNumber: "",
             inquiryType: "",
             message: "",
-            consent: false,
+            consent: false, // ✅ starts unchecked, Zod will error on submit if not checked
         },
     })
 
-    function onSubmit(values) {
+    function onSubmit(values: FormType) {
         console.log(values)
-        // handle send
     }
 
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                {/* First/Last Name */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField
                         control={form.control}
@@ -66,7 +68,6 @@ export default function ContactUsForm() {
                             </FormItem>
                         )}
                     />
-
                     <FormField
                         control={form.control}
                         name="lastName"
@@ -82,6 +83,7 @@ export default function ContactUsForm() {
                     />
                 </div>
 
+                {/* Email */}
                 <FormField
                     control={form.control}
                     name="email"
@@ -95,6 +97,8 @@ export default function ContactUsForm() {
                         </FormItem>
                     )}
                 />
+
+                {/* Phone + Inquiry */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField
                         control={form.control}
@@ -109,7 +113,6 @@ export default function ContactUsForm() {
                             </FormItem>
                         )}
                     />
-
                     <FormField
                         control={form.control}
                         name="inquiryType"
@@ -135,6 +138,8 @@ export default function ContactUsForm() {
                         )}
                     />
                 </div>
+
+                {/* Message */}
                 <FormField
                     control={form.control}
                     name="message"
@@ -149,13 +154,17 @@ export default function ContactUsForm() {
                     )}
                 />
 
+                {/* Consent */}
                 <FormField
                     control={form.control}
                     name="consent"
                     render={({ field }) => (
                         <FormItem className="flex items-center gap-2 space-y-0">
                             <FormControl>
-                                <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                                <Checkbox
+                                    checked={field.value}
+                                    onCheckedChange={field.onChange}
+                                />
                             </FormControl>
                             <FormLabel className="text-sm text-muted-foreground">
                                 I consent to My Pathshaala processing my personal data for responding to my inquiry.

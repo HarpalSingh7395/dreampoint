@@ -4,7 +4,7 @@ import AnimatedButton from './AnimatedButton';
 
 export default function Hero() {
   return (
-    <section className="relative lg:min-h-[80vh] flex items-center justify-center overflow-hidden py-14">
+    <section className="relative lg:min-h-[80vh] flex items-center justify-center overflow-hidden py-14 md:pb-44">
       {/* Dynamic gradient background */}
       <div className="absolute inset-0 bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900">
         <div className="absolute inset-0 bg-gradient-to-t from-blue-900/50 to-transparent"></div>

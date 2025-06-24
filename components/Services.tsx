@@ -1,3 +1,4 @@
+import Link from "next/link";
 import ServiceCard from "./ServiceCard";
 
 export default function ServicesSection() {
@@ -122,9 +123,9 @@ export default function ServicesSection() {
 
                 {/* Enhanced CTA Section */}
                 <div className="w-full flex justify-center">
-                    <button className="bg-white text-blue-600 font-bold py-4 px-8 rounded-full text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 hover:bg-gray-50">
+                    <Link href={"/fees"} className="bg-white text-blue-600 font-bold py-4 px-8 rounded-full text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 hover:bg-gray-50">
                         View Fee Structure
-                    </button>
+                    </Link>
                 </div>
             </div>
         </section>
