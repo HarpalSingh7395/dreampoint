@@ -4,60 +4,119 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { signIn } from "@/auth"
 
-export function LoginForm({
+export function SignupForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
-
       <div className="flex flex-col gap-6">
         <form
           action={async (formData) => {
             "use server"
-            console.log("Form data", formData)
-            await signIn("mailgun", {
-              redirect: true,
-              redirectTo: "/admin/complete"
+            console.log("Signup form data", formData)
+            // Handle signup logic here
+            // You might want to create the user account first, then sign them in
+            await signIn("mailgun", formData, {
+              redirectTo: "/"
             })
           }}>
           <div className="flex flex-col items-center gap-2 mb-6">
-            <a href="#" className="flex flex-col items-center gap-2 font-medium">
+            <a
+              href="#"
+              className="flex flex-col items-center gap-2 font-medium"
+            >
               <div className="flex size-8 items-center justify-center rounded-md">
                 <GalleryVerticalEnd className="size-6" />
               </div>
-              <span className="sr-only">My Pathshaala</span>
+              <span className="sr-only">My Pathshaala.</span>
             </a>
-            <h1 className="text-xl font-bold">Sign In to My Pathshaala</h1>
-            <p className="text-sm text-muted-foreground text-center">
-              We use secure magic links and SSO — no passwords required.
-            </p>
+            <h1 className="text-xl font-bold">Join My Pathshaala.</h1>
+            <div className="text-center text-sm">
+              Already have an account?{" "}
+              <a href="#" className="underline underline-offset-4">
+                Sign in
+              </a>
+            </div>
           </div>
-          <div className="grid gap-4">
-            <div className="grid gap-2">
-              <Label htmlFor="email">Email Address</Label>
+          <div className="flex flex-col gap-6">
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="grid gap-3">
+                <Label htmlFor="firstName">First Name</Label>
+                <Input
+                  id="firstName"
+                  name="firstName"
+                  placeholder="John"
+                  required
+                />
+              </div>
+              <div className="grid gap-3">
+                <Label htmlFor="lastName">Last Name</Label>
+                <Input
+                  id="lastName"
+                  name="lastName"
+                  placeholder="Doe"
+                  required
+                />
+              </div>
+            </div>
+            <div className="grid gap-3">
+              <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
                 type="email"
                 name="email"
-                placeholder="you@example.com"
+                placeholder="john@example.com"
                 required
               />
-              <p className="text-xs text-muted-foreground">
-                A secure login link will be sent to your inbox.
-              </p>
             </div>
-            <Button type="submit" variant={"gradient"} className="w-full">
-              Send Magic Link
+            <div className="grid gap-3">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                name="password"
+                placeholder="Create a password"
+                required
+                minLength={8}
+              />
+            </div>
+            <div className="grid gap-3">
+              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                name="confirmPassword"
+                placeholder="Confirm your password"
+                required
+                minLength={8}
+              />
+            </div>
+            <div className="grid gap-3">
+              <Label>I am a</Label>
+              <RadioGroup defaultValue="student" name="userType">
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="student" id="student" />
+                  <Label htmlFor="student">Student</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="teacher" id="teacher" />
+                  <Label htmlFor="teacher">Teacher</Label>
+                </div>
+              </RadioGroup>
+            </div>
+            <Button type="submit" className="w-full">
+              Create Account
             </Button>
           </div>
         </form>
 
         <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
           <span className="bg-background text-muted-foreground relative z-10 px-2">
-            Or continue with
+            Or
           </span>
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
@@ -72,7 +131,7 @@ export function LoginForm({
           </Button>
           <form action={async () => {
             "use server"
-            console.log("Using google signin")
+            console.log("Using google signin for signup")
             await signIn("google", {
               redirectTo: "/"
             })

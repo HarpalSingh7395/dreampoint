@@ -10,15 +10,18 @@ declare module "next-auth" {
   interface Session {
     user: {
       role: "SUPER_ADMIN" | "ADMIN" | "TEACHER" | "STUDENT"
+      profileStatus: "INCOMPLETE" | "PENDING_APPROVAL" | "APPROVED" | "REJECTED"
     } & DefaultSession["user"]
   }
 
   interface User {
     role: "SUPER_ADMIN" | "ADMIN" | "TEACHER" | "STUDENT"
+    profileStatus: "INCOMPLETE" | "PENDING_APPROVAL" | "APPROVED" | "REJECTED"
   }
 
   interface JWT {
     role?: "SUPER_ADMIN" | "ADMIN" | "TEACHER" | "STUDENT"
+    profileStatus?: "INCOMPLETE" | "PENDING_APPROVAL" | "APPROVED" | "REJECTED"
   }
 }
 
@@ -39,13 +42,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       // Only on initial sign-in
       if (user) {
         token.role = user.role
+        token.profileStatus = user.profileStatus
       }
       return token
     },
 
     async session({ session, token }) {
       if (session.user && token.role) {
-        session.user.role = token.role as "ADMIN" | "TEACHER" | "STUDENT"
+        session.user.role = token.role as any
+        session.user.profileStatus = token.profileStatus as any
       }
       return session
     },
@@ -54,8 +59,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       const isAdmin = auth?.user?.role === "ADMIN" || auth?.user?.role === "SUPER_ADMIN"
       const isAdminRoute = request.nextUrl.pathname.startsWith("/admin")
 
+      // ✅ Prevent non-admins from accessing admin routes
       if (isAdminRoute && !isAdmin) {
         return NextResponse.redirect(new URL("/unauthorized", request.url))
+      }
+
+       // ✅ Redirect incomplete profiles to /admin/complete
+      if (!isAdminRoute && auth?.user?.profileStatus === "INCOMPLETE") {
+        return NextResponse.redirect(new URL("/admin/complete", request.url))
       }
 
       return !!auth?.user
@@ -64,5 +75,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   pages: {
     signIn: "/login",
     signOut: "/login",
+    newUser: "/admin/complete",
+    verifyRequest: "/verify-request"
   },
 } satisfies NextAuthConfig)

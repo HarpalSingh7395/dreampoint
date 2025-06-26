@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
         phoneNumber: true,
         address: true,
         role: true,
-        approved: true,
+        profileStatus: true,
         createdAt: true,
       },
     })

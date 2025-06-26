@@ -10,7 +10,7 @@ export async function POST(req: Request) {
 
   await prisma.user.update({
     where: { id },
-    data: { approved: true },
+    data: { profileStatus: "APPROVED" },
   })
 
   return NextResponse.json({ message: "User approved" })
