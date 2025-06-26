@@ -17,11 +17,7 @@ export function LoginForm({
         <form
           action={async (formData) => {
             "use server"
-            console.log("Form data", formData)
-            await signIn("mailgun", {
-              redirect: true,
-              redirectTo: "/admin/complete"
-            })
+            await signIn("mailgun", formData)
           }}>
           <div className="flex flex-col items-center gap-2 mb-6">
             <a href="#" className="flex flex-col items-center gap-2 font-medium">
