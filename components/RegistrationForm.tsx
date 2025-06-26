@@ -247,8 +247,8 @@ export function RegistrationForm({
                                         <SelectItem value="10th">10th Grade</SelectItem>
                                         <SelectItem value="12th">12th Grade</SelectItem>
                                         <SelectItem value="diploma">Diploma</SelectItem>
-                                        <SelectItem value="bachelor">Bachelor's Degree</SelectItem>
-                                        <SelectItem value="master">Master's Degree</SelectItem>
+                                        <SelectItem value="bachelor">{`Bachelor's Degree`}</SelectItem>
+                                        <SelectItem value="master">{`Master's Degree`}</SelectItem>
                                         <SelectItem value="phd">PhD</SelectItem>
                                     </SelectContent>
                                 </Select>
