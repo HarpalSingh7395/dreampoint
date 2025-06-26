@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState } from 'react'
-import { GalleryVerticalEnd, Upload, FileText, User, MapPin, BookOpen, Calendar, Award, Users, Clock, DollarSign } from "lucide-react"
+import { GalleryVerticalEnd, Upload, FileText, User, MapPin, BookOpen, Calendar, Award, Users, Clock, DollarSign, Loader2 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -20,6 +20,7 @@ export function RegistrationForm({
     ...props
 }: React.ComponentProps<"div">) {
     const { data } = useSession();
+    const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
     const [userType, setUserType] = useState("student")
     const [selectedSubjects, setSelectedSubjects] = useState<string[]>([])
     const [selectedGrades, setSelectedGrades] = useState<string[]>([])
@@ -68,6 +69,7 @@ export function RegistrationForm({
             <form
                 action={async (formData) => {
                     try {
+                        setIsSubmitting(true)
                         console.log("Registration form data", formData)
                         formData.set("email", data?.user.email || "");
                         const res = await fetch("/api/register", {
@@ -91,6 +93,9 @@ export function RegistrationForm({
                     } catch (err) {
                         console.error("Unexpected error during registration:", err);
                         // Show fallback error
+                    }
+                    finally{
+                        setIsSubmitting(false)
                     }
                 }}
                 className="space-y-8"
@@ -534,8 +539,8 @@ export function RegistrationForm({
 
                 {/* Submit Button */}
                 <div className="flex flex-col gap-4">
-                    <Button type="submit" size="lg" className="w-full">
-                        Complete Registration
+                    <Button disabled={isSubmitting} type="submit" size="lg" className="w-full">
+                        {isSubmitting?<Loader2 className='animate-spin' />:"Complete Registration"}
                     </Button>
                     <div className="text-muted-foreground text-center text-xs text-balance">
                         By registering, you agree to our{" "}

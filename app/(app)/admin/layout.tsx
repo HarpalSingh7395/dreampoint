@@ -1,5 +1,5 @@
 "use client"
-import { AppSidebar } from "@/components/app-sidebar"
+import { AppSidebar, NavDataList } from "@/components/app-sidebar"
 import {
     Breadcrumb,
     BreadcrumbItem,
@@ -14,14 +14,31 @@ import {
     SidebarProvider,
     SidebarTrigger,
 } from "@/components/ui/sidebar"
-import { SessionProvider } from "next-auth/react"
 import { ReactNode } from "react"
+
+const data = {
+  navMain: [
+    {
+      title: "Admin",
+      url: "#",
+      items: [
+        {
+          title: "Dashboard",
+          url: "/admin/dashboard",
+        },
+        {
+          title: "Users",
+          url: "/admin/users",
+        },
+      ],
+    },
+  ],
+} as NavDataList;
 
 export default function Page({ children }: { children: ReactNode }) {
     return (
-        <SessionProvider>
             <SidebarProvider>
-                <AppSidebar />
+                <AppSidebar data={data} />
                 <SidebarInset>
                     <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
                         <SidebarTrigger className="-ml-1" />
@@ -46,6 +63,5 @@ export default function Page({ children }: { children: ReactNode }) {
                     {children}
                 </SidebarInset>
             </SidebarProvider>
-        </SessionProvider>
     )
 }

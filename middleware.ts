@@ -1,5 +1,5 @@
 export { auth as middleware } from "@/auth"
 
 export const config = {
-  matcher: ["/admin/:path*", "/dashboard/:path*"], // run only on protected pages
+  matcher: ["/admin/:path*", "/student/:path*", "/teacher/:path*", "/complete"], // run only on protected pages
 }

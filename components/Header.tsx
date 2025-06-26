@@ -37,6 +37,8 @@ export default function Header() {
     });
   };
 
+  const dashboardLink = session?.user.role == "ADMIN" || session?.user.role == "SUPER_ADMIN" ? "/admin/dashboard" : session?.user.role == "STUDENT" ? "/student/dashboard" : "/teacher/dashboard"
+
   return (
     <header className={cn(
       "sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 transition-all duration-300",
@@ -46,11 +48,11 @@ export default function Header() {
         {/* Logo */}
         <Link href="/" className="flex items-center space-x-3 group">
           <div className="relative">
-            <Image 
-              src="/images/logo.svg" 
-              alt="My Pathshaala Logo" 
-              width={40} 
-              height={40} 
+            <Image
+              src="/images/logo.svg"
+              alt="My Pathshaala Logo"
+              width={40}
+              height={40}
               className="transition-transform duration-300 group-hover:scale-110"
             />
           </div>
@@ -85,9 +87,12 @@ export default function Header() {
         <div className="hidden md:flex items-center space-x-3">
           {status == "loading" ? null : status === "authenticated" ? (
             <div className="flex items-center space-x-3">
-              <Badge variant="secondary" className="text-xs">
-                Welcome, {session?.user?.name || 'User'}
-              </Badge>
+              <Button variant="gradient" className="text-xs  relative overflow-hidden group" asChild>
+                <Link href={dashboardLink}>
+                  Dashboard
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent transform -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out [transform:skewX(-12deg)]"></div>
+                </Link>
+              </Button>
               <Button
                 variant="outline"
                 size="sm"

@@ -63,10 +63,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (isAdminRoute && !isAdmin) {
         return NextResponse.redirect(new URL("/unauthorized", request.url))
       }
-
+      console.log("Profile status", auth?.user?.profileStatus)
        // ✅ Redirect incomplete profiles to /admin/complete
-      if (!isAdminRoute && auth?.user?.profileStatus === "INCOMPLETE") {
-        return NextResponse.redirect(new URL("/admin/complete", request.url))
+      if (!isAdminRoute && auth?.user?.profileStatus === "INCOMPLETE" && !request.nextUrl.pathname.startsWith("/complete")) {
+        return NextResponse.redirect(new URL("/complete", request.url))
       }
 
       return !!auth?.user
