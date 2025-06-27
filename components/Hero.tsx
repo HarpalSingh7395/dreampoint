@@ -1,35 +1,38 @@
 import React from 'react';
 import FloatingElement from './FloatingElement';
 import AnimatedButton from './AnimatedButton';
+import Link from 'next/link';
+import { auth } from '@/auth';
 
-export default function Hero() {
+export default async function Hero() {
+  const session = await auth();
   return (
     <section className="relative lg:min-h-[80vh] flex items-center justify-center overflow-hidden py-14 md:pb-44">
       {/* Dynamic gradient background */}
       <div className="absolute inset-0 bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900">
         <div className="absolute inset-0 bg-gradient-to-t from-blue-900/50 to-transparent"></div>
       </div>
-      
+
       {/* Animated background elements */}
       <div className="absolute inset-0">
         {/* Large floating orbs */}
         <FloatingElement delay={0} amplitude={30}>
           <div className="absolute top-20 left-20 w-96 h-96 bg-blue-400/20 rounded-full blur-3xl"></div>
         </FloatingElement>
-        
+
         <FloatingElement delay={1000} amplitude={25}>
           <div className="absolute top-40 right-32 w-80 h-80 bg-purple-400/20 rounded-full blur-3xl"></div>
         </FloatingElement>
-        
+
         <FloatingElement delay={2000} amplitude={35}>
           <div className="absolute bottom-32 left-1/3 w-72 h-72 bg-pink-400/20 rounded-full blur-3xl"></div>
         </FloatingElement>
-        
+
         {/* Small floating particles */}
         <div className="absolute inset-0">
           {[...Array(20)].map((_, i) => (
             <FloatingElement key={i} delay={i * 200} amplitude={Math.random() * 15 + 5}>
-              <div 
+              <div
                 className="absolute w-2 h-2 bg-white/30 rounded-full blur-sm"
                 style={{
                   left: `${Math.random() * 100}%`,
@@ -40,7 +43,7 @@ export default function Hero() {
           ))}
         </div>
       </div>
-      
+
       {/* Grid pattern overlay */}
       <div className="absolute inset-0 opacity-5">
         <div className="w-full h-full" style={{
@@ -51,7 +54,7 @@ export default function Hero() {
           backgroundSize: '50px 50px'
         }}></div>
       </div>
-      
+
       <div className="container mx-auto px-6 relative z-10">
         <div className="flex flex-col lg:flex-row items-center justify-between gap-16">
           {/* Content */}
@@ -59,9 +62,9 @@ export default function Hero() {
             {/* Badge */}
             <div className="inline-flex items-center bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-6 py-2 mb-8">
               <div className="w-2 h-2 bg-green-400 rounded-full mr-3 animate-pulse"></div>
-              <span className="text-white/90 font-medium">Trusted by 10,000+ Students</span>
+              <span className="text-white/90 font-medium">Trusted by 1,000+ Students</span>
             </div>
-            
+
             {/* Main heading */}
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-8 leading-tight">
               <span className="bg-gradient-to-r from-white via-blue-100 to-purple-200 bg-clip-text text-transparent">
@@ -72,12 +75,12 @@ export default function Hero() {
                 Academic Journey
               </span>
             </h1>
-            
+
             {/* Subtitle */}
             <p className="text-xl md:text-2xl text-blue-100 mb-10 leading-relaxed max-w-2xl">
               Experience personalized tutoring that adapts to your learning style. From board exams to competitive tests like NEET and JEE, we make learning engaging and results-driven.
             </p>
-            
+
             {/* Statistics */}
             <div className="flex sm:flex-row items-center justify-center lg:justify-start space-x-8 sm:space-y-0 sm:space-x-8 mb-12">
               <div className="text-center">
@@ -85,7 +88,7 @@ export default function Hero() {
                 <div className="text-blue-200 text-sm">Success Rate</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-white">500+</div>
+                <div className="text-3xl font-bold text-white">100+</div>
                 <div className="text-blue-200 text-sm">Expert Tutors</div>
               </div>
               <div className="text-center">
@@ -93,17 +96,21 @@ export default function Hero() {
                 <div className="text-blue-200 text-sm">Support</div>
               </div>
             </div>
-            
+
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start space-y-4 sm:space-y-0 sm:space-x-6">
-              <AnimatedButton variant="primary">
-                🎯 Find Your Perfect Tutor
-              </AnimatedButton>
-              <AnimatedButton variant="secondary">
-                🚀 Join as a Tutor
-              </AnimatedButton>
+              {(!session || session.user.role == "STUDENT") && <AnimatedButton variant="primary" className='w-full md:w-auto'>
+                <Link href={session ? "/student/dashboard" : "/login"}>
+                  🎯 Find Your Perfect Tutor
+                </Link>
+              </AnimatedButton>}
+              {(!session || session.user.role == "TEACHER") && <AnimatedButton variant="secondary" className='w-full md:w-auto'>
+                <Link href={session ? "/teacher/dashboard" : "/login"}>
+                  🚀 Join as a Tutor
+                </Link>
+              </AnimatedButton>}
             </div>
-            
+
             {/* Trust indicators */}
             <div className="mt-12 flex items-center justify-center lg:justify-start space-x-6">
               <div className="flex items-center space-x-2">
@@ -116,7 +123,7 @@ export default function Hero() {
               </div>
             </div>
           </div>
-          
+
           {/* Visual Element */}
           <div className="lg:w-1/2 flex justify-center lg:justify-end">
             <div className="relative">
@@ -132,7 +139,7 @@ export default function Hero() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                     </svg>
                   </div>
-                  
+
                   {/* Floating subject icons */}
                   <FloatingElement delay={500} amplitude={15}>
                     <div className="absolute -top-4 left-8 bg-white rounded-full p-3 shadow-lg">
@@ -141,7 +148,7 @@ export default function Hero() {
                       </svg>
                     </div>
                   </FloatingElement>
-                  
+
                   <FloatingElement delay={1500} amplitude={20}>
                     <div className="absolute top-8 -right-4 bg-white rounded-full p-3 shadow-lg">
                       <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -149,7 +156,7 @@ export default function Hero() {
                       </svg>
                     </div>
                   </FloatingElement>
-                  
+
                   <FloatingElement delay={2500} amplitude={18}>
                     <div className="absolute bottom-8 -left-4 bg-white rounded-full p-3 shadow-lg">
                       <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -163,19 +170,19 @@ export default function Hero() {
           </div>
         </div>
       </div>
-      
+
       {/* Enhanced bottom wave */}
       <div className="absolute bottom-0 left-0 right-0 hidden md:block">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 120" className="w-full h-auto">
           <defs>
             <linearGradient id="waveGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="20%" stopColor="#f5f9ff" stopOpacity="0.9"/>
-              <stop offset="50%" stopColor="#f5f9ff" stopOpacity="0.9"/>
-              <stop offset="100%" stopColor="#f5f9ff" stopOpacity="1"/>
+              <stop offset="20%" stopColor="#f5f9ff" stopOpacity="0.9" />
+              <stop offset="50%" stopColor="#f5f9ff" stopOpacity="0.9" />
+              <stop offset="100%" stopColor="#f5f9ff" stopOpacity="1" />
             </linearGradient>
           </defs>
-          <path 
-            d="M0,60 C240,20 480,100 720,60 C960,20 1200,100 1440,60 L1440,120 L0,120 Z" 
+          <path
+            d="M0,60 C240,20 480,100 720,60 C960,20 1200,100 1440,60 L1440,120 L0,120 Z"
             fill="#f5f9ff"
           ></path>
         </svg>

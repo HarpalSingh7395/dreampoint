@@ -15,6 +15,7 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar"
 import { GalleryVerticalEnd } from "lucide-react"
+import LogoIcon from "./icons/LogoIcon"
 
 export interface NavDataItem {
   title: string;
@@ -32,7 +33,7 @@ export function AppSidebar({ data, ...props }: React.ComponentProps<typeof Sideb
     <Sidebar {...props}>
       <SidebarHeader className="flex justify-start items-center flex-row">
         <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
-          <GalleryVerticalEnd className="size-4" />
+          <LogoIcon variant="base" className="size-4" />
         </div>
         <div className="flex flex-col gap-0.5 leading-none">
           <span className="font-medium">My Pathshaala</span>

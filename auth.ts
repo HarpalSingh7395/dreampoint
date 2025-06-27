@@ -9,18 +9,18 @@ import type { NextAuthConfig } from "next-auth"
 declare module "next-auth" {
   interface Session {
     user: {
-      role: "SUPER_ADMIN" | "ADMIN" | "TEACHER" | "STUDENT"
+      role: "SUPER_ADMIN" | "ADMIN" | "TEACHER" | "STUDENT" | "BASE_USER"
       profileStatus: "INCOMPLETE" | "PENDING_APPROVAL" | "APPROVED" | "REJECTED"
     } & DefaultSession["user"]
   }
 
   interface User {
-    role: "SUPER_ADMIN" | "ADMIN" | "TEACHER" | "STUDENT"
+    role: "SUPER_ADMIN" | "ADMIN" | "TEACHER" | "STUDENT" | "BASE_USER"
     profileStatus: "INCOMPLETE" | "PENDING_APPROVAL" | "APPROVED" | "REJECTED"
   }
 
   interface JWT {
-    role?: "SUPER_ADMIN" | "ADMIN" | "TEACHER" | "STUDENT"
+    role?: "SUPER_ADMIN" | "ADMIN" | "TEACHER" | "STUDENT" | "BASE_USER"
     profileStatus?: "INCOMPLETE" | "PENDING_APPROVAL" | "APPROVED" | "REJECTED"
   }
 }
@@ -37,6 +37,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60,
   },
+  debug: true,
   callbacks: {
     async jwt({ token, user }) {
       // Only on initial sign-in
@@ -59,15 +60,21 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       const isAdmin = auth?.user?.role === "ADMIN" || auth?.user?.role === "SUPER_ADMIN"
       const isAdminRoute = request.nextUrl.pathname.startsWith("/admin")
 
+      // ✅ Redirect incomplete profiles to /admin/complete
+      if (auth?.user.role == "BASE_USER" && auth?.user?.profileStatus === "INCOMPLETE" && !request.nextUrl.pathname.startsWith("/complete")) {
+        return NextResponse.redirect(new URL("/complete", request.url))
+      }
+
+      // ✅ Redirect users with PENDING_APPROVAL status to /pending-approval
+      if (auth?.user?.profileStatus === "PENDING_APPROVAL" && !request.nextUrl.pathname.startsWith("/pending-approval")) {
+        return NextResponse.redirect(new URL("/pending-approval", request.url))
+      }
+
       // ✅ Prevent non-admins from accessing admin routes
       if (isAdminRoute && !isAdmin) {
         return NextResponse.redirect(new URL("/unauthorized", request.url))
       }
-      console.log("Profile status", auth?.user?.profileStatus)
-       // ✅ Redirect incomplete profiles to /admin/complete
-      if (!isAdminRoute && auth?.user?.profileStatus === "INCOMPLETE" && !request.nextUrl.pathname.startsWith("/complete")) {
-        return NextResponse.redirect(new URL("/complete", request.url))
-      }
+
 
       return !!auth?.user
     },
@@ -75,7 +82,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   pages: {
     signIn: "/login",
     signOut: "/login",
-    newUser: "/admin/complete",
+    newUser: "/complete",
     verifyRequest: "/verify-request"
   },
 } satisfies NextAuthConfig)

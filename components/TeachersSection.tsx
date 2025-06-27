@@ -59,11 +59,11 @@ export default function TeachersSection() {
                 </div>
 
                 {/* CTA at bottom */}
-                <div className="text-center mt-16">
+                {/* <div className="text-center mt-16">
                     <AnimatedButton variant="primary">
                         👨‍🏫 Meet All Our Teachers
                     </AnimatedButton>
-                </div>
+                </div> */}
             </div>
 
             {/* Bottom wave */}

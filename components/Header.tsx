@@ -3,11 +3,13 @@ import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Button } from './ui/button';
-import { Sheet, SheetContent, SheetTrigger } from './ui/sheet';
+import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from './ui/sheet';
 import { Badge } from './ui/badge';
 import { signOut, useSession } from "next-auth/react";
 import { Menu, X, LogOut, User, GraduationCap } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import Logo from './Logo';
+import LogoIcon from './icons/LogoIcon';
 
 export default function Header() {
   const { status, data: session } = useSession();
@@ -48,13 +50,7 @@ export default function Header() {
         {/* Logo */}
         <Link href="/" className="flex items-center space-x-3 group">
           <div className="relative">
-            <Image
-              src="/images/logo.svg"
-              alt="My Pathshaala Logo"
-              width={40}
-              height={40}
-              className="transition-transform duration-300 group-hover:scale-110"
-            />
+            <Logo className="transition-transform duration-300 size-7 md:size-9" />
           </div>
           <div className="flex flex-col">
             <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
@@ -123,23 +119,15 @@ export default function Header() {
               <span className="sr-only">Toggle menu</span>
             </Button>
           </SheetTrigger>
-          <SheetContent side="right" className="w-80 p-0">
+          <SheetContent aria-description='Navbar' side="right" className="w-80 p-0">
             <div className="flex h-full flex-col">
               {/* Mobile Header */}
-              <div className="flex items-center justify-between border-b p-4">
-                <div className="flex items-center space-x-2">
-                  <Image src="/images/logo.svg" alt="Logo" width={32} height={32} />
-                  <span className="font-semibold text-primary">My Pathshaala</span>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="p-2"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
+              <SheetHeader className="flex items-center justify-start border-b p-4">
+                <SheetTitle className="flex items-center justify-start space-x-2 w-full">
+                  <LogoIcon variant='brand' className='size-8' />
+                  <span className="font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">My Pathshaala</span>
+                </SheetTitle>
+              </SheetHeader>
 
               {/* Mobile Navigation */}
               <nav className="flex-1 overflow-y-auto p-4">

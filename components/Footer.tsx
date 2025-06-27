@@ -1,5 +1,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
+import Logo from './Logo';
+import LogoIcon from './icons/LogoIcon';
 
 export default function Footer() {
   return (
@@ -29,7 +31,7 @@ export default function Footer() {
           {/* Logo + Description */}
           <div>
             <Link href="/" className="flex items-center space-x-2 mb-4">
-              <Image src="/images/logo.svg" alt="My Pathshaala Logo" width={40} height={40} />
+              <LogoIcon variant='base' className="transition-transform duration-300 size-6 text-white" />
               <span className="text-xl font-bold text-white">My Pathshaala</span>
             </Link>
             <p className="text-blue-100 mb-4">

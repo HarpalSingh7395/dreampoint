@@ -1,12 +1,12 @@
 import { ID, storage } from "@/lib/appwrite"
 import { prisma } from "@/prisma"
+import { DocumentType, Role, ProfileStatus } from "@prisma/client"
 import { NextResponse } from "next/server"
 
 export async function POST(req: Request) {
     try {
         const formData = await req.formData()
 
-        // Extract user data
         const userType = formData.get('userType') as string
         const fullName = formData.get('fullName') as string
         const email = formData.get('email') as string
@@ -26,130 +26,140 @@ export async function POST(req: Request) {
         const availability = formData.get('availability') as string | null
         const bio = formData.get('bio') as string | null
         const teachingGrades = formData.get('teachingGrades') as string | null
+        const extraQualifications = formData.get('extraQualifications')
+            ? JSON.parse(formData.get('extraQualifications') as string)
+            : null
 
-        // Check if user exists
-        const existingUser = await prisma.user.findUnique({ where: { email } })
+        const documentTypes: { field: string; type: DocumentType }[] = [
+            { field: 'profilePicture', type: DocumentType.PROFILE_PICTURE },
+            ...(userType === 'teacher'
+                ? [
+                    { field: 'governmentId', type: DocumentType.GOVERNMENT_ID },
+                    { field: 'educationCerts', type: DocumentType.EDUCATION_CERT },
+                    { field: 'resume', type: DocumentType.RESUME },
+                    { field: 'experienceCerts', type: DocumentType.EXPERIENCE_CERT },
+                    { field: 'policeVerification', type: DocumentType.POLICE_VERIFICATION }
+                ]
+                : [
+                    { field: 'studentId', type: DocumentType.STUDENT_ID },
+                    { field: 'reportCard', type: DocumentType.REPORT_CARD },
+                    { field: 'parentId', type: DocumentType.PARENT_ID }
+                ])
+        ]
 
-        if (existingUser && existingUser.profileStatus !== 'INCOMPLETE') {
-            return NextResponse.json(
-                { error: "User already exists with completed profile" },
-                { status: 400 }
-            )
-        }
-
-        // Create/update user
-        const userData = {
-            name: fullName,
-            email,
-            phoneNumber: phone,
-            age,
-            address,
-            city,
-            state,
-            zipCode,
-            qualification,
-            institution,
-            currentGrade,
-            subjects,
-            experience,
-            hourlyRate,
-            specialization,
-            availability,
-            bio,
-            teachingGrades,
-            role: userType === 'teacher' ? 'TEACHER' : 'STUDENT',
-            profileStatus: 'PENDING_APPROVAL'
-        } as {
-            readonly name: string;
-            readonly email: string;
-            readonly phoneNumber: string;
-            readonly age: number;
-            readonly address: string;
-            readonly city: string;
-            readonly state: string;
-            readonly zipCode: string;
-            readonly qualification: string;
-            readonly institution: string;
-            readonly currentGrade: string | null;
-            readonly subjects: string;
-            readonly experience: number | null;
-            readonly hourlyRate: number | null;
-            readonly specialization: string | null;
-            readonly availability: string | null;
-            readonly bio: string | null;
-            readonly teachingGrades: string | null;
-            readonly role: "TEACHER" | "STUDENT";
-            readonly profileStatus: "PENDING_APPROVAL";
-        }
-
-        const user = existingUser
-            ? await prisma.user.update({ where: { email }, data: userData })
-            : await prisma.user.create({ data: userData })
-
-        // Process documents based on user type
-        const documentTypes = userType === 'teacher'
-            ? [
-                { field: 'governmentId', type: 'GOVERNMENT_ID' },
-                { field: 'educationCerts', type: 'EDUCATION_CERT' },
-                { field: 'resume', type: 'RESUME' },
-                { field: 'experienceCerts', type: 'EXPERIENCE_CERT' },
-                { field: 'policeVerification', type: 'POLICE_VERIFICATION' }
-            ]
-            : [
-                { field: 'studentId', type: 'STUDENT_ID' },
-                { field: 'reportCard', type: 'REPORT_CARD' },
-                { field: 'parentId', type: 'PARENT_ID' }
-            ]
+        const uploadedDocs: {
+            field: string
+            type: DocumentType
+            fileId: string
+            mimeType: string
+            size: number
+        }[] = []
 
         for (const docType of documentTypes) {
             const file = formData.get(docType.field) as File | null
-            if (file && file.size > 0) {
 
-                // Upload to Appwrite
+            if (file && file.size > 0) {
                 const uploadedFile = await storage.createFile(
                     process.env.APPWRITE_BUCKET_ID!,
                     ID.unique(),
                     file
                 )
 
-                // Create document record
-                await prisma.document.create({
-                    data: {
-                        userId: user.id,
-                        name: docType.type,
-                        path: process.env.APPWRITE_BUCKET_ID!,
-                        fileId: uploadedFile.$id,
-                        mimeType: file.type,
-                        size: file.size,
-                        type: docType.type
-                    }
+                uploadedDocs.push({
+                    field: docType.field,
+                    type: docType.type,
+                    fileId: uploadedFile.$id,
+                    mimeType: file.type,
+                    size: file.size
                 })
             }
         }
 
-        // Send approval notification to admin
-        // await mg.messages.create(process.env.MAILGUN_DOMAIN!, {
-        //     from: `Pathshaala Notifications <notifications@${process.env.MAILGUN_DOMAIN!}>`,
-        //     to: [process.env.ADMIN_EMAIL!],
-        //     subject: `New ${userType} Profile Awaiting Approval`,
-        //     text: `A new ${userType} profile has been submitted for approval.\n\n` +
-        //         `Name: ${fullName}\n` +
-        //         `Email: ${email}\n` +
-        //         `View in admin panel: ${process.env.ADMIN_URL}/users/${user.id}\n\n` +
-        //         `Please review and approve or reject this profile.`
-        // })
+        // Step 2: Now run Prisma transaction — fast DB-only logic
+        const result = await prisma.$transaction(async (tx) => {
+            const existingUser = await tx.user.findUnique({ where: { email } })
+
+            const user = existingUser
+                ? await tx.user.update({
+                    where: { email },
+                    data: {
+                        name: fullName,
+                        phoneNumber: phone,
+                        age,
+                        address,
+                        city,
+                        state,
+                        zipCode,
+                        qualification,
+                        institution,
+                        currentGrade,
+                        subjects,
+                        experience,
+                        hourlyRate,
+                        specialization,
+                        availability,
+                        bio,
+                        teachingGrades,
+                        role: userType === 'teacher' ? Role.TEACHER : Role.STUDENT,
+                        extraQualifications,
+                        profileStatus: ProfileStatus.PENDING_APPROVAL
+                    }
+                })
+                : await tx.user.create({
+                    data: {
+                        name: fullName,
+                        email,
+                        phoneNumber: phone,
+                        age,
+                        address,
+                        city,
+                        state,
+                        zipCode,
+                        qualification,
+                        institution,
+                        currentGrade,
+                        subjects,
+                        experience,
+                        hourlyRate,
+                        specialization,
+                        availability,
+                        bio,
+                        teachingGrades,
+                        role: userType === 'teacher' ? Role.TEACHER : Role.STUDENT,
+                        extraQualifications,
+                        profileStatus: ProfileStatus.PENDING_APPROVAL
+                    }
+                })
+
+            // Link uploaded documents
+            for (const doc of uploadedDocs) {
+                await tx.document.create({
+                    data: {
+                        userId: user.id,
+                        name: doc.type,
+                        path: process.env.APPWRITE_BUCKET_ID!,
+                        fileId: doc.fileId,
+                        mimeType: doc.mimeType,
+                        size: doc.size,
+                        type: doc.type
+                    }
+                })
+            }
+
+            return user
+        })
 
         return NextResponse.json({
             success: true,
             message: 'Profile submitted for approval',
-            user
+            user: result
         }, { status: 201 })
 
-    } catch (err) {
+    } catch (err: any) {
         console.error("Profile completion error:", err)
         return NextResponse.json(
-            { error: "Internal Server Error" },
-            { status: 500 }
+            { error: err?.message || "Internal Server Error" },
+            { status: err.message?.includes("User already exists") ? 400 : 500 }
         )
     }
 }

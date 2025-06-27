@@ -15,12 +15,13 @@ model User {
   image         String?
   phoneNumber   String?
   address       String?
-  role          Role      @default(STUDENT)
+  role          Role      @default(BASE_USER)
   age           Int?
   city          String?
   state         String?
   zipCode       String?
   qualification String?
+  extraQualifications Json? 
   institution   String?
   currentGrade  String?
   profileStatus ProfileStatus @default(INCOMPLETE)
@@ -48,6 +49,7 @@ enum Role {
   ADMIN
   TEACHER
   STUDENT
+  BASE_USER
 }
 
 enum ProfileStatus {
@@ -78,20 +80,30 @@ model Account {
   @@id([provider, providerAccountId])
 }
 
+enum DocumentType {
+  GOVERNMENT_ID
+  EDUCATION_CERT  
+  RESUME
+  EXPERIENCE_CERT
+  POLICE_VERIFICATION
+  STUDENT_ID
+  REPORT_CARD
+  PARENT_ID
+  PROFILE_PICTURE
+}
+
 model Document {
-  id        String   @id @default(cuid())
-  userId    String
-  name      String
-  path      String   // Appwrite bucket ID
-  fileId    String   // Appwrite file ID
-  mimeType  String?
-  size      Int?     // Optional: size in bytes
-  type      String   // Type of document (e.g., "ID_PROOF", "EDUCATION_CERT", etc.)
+  id String @id @default(cuid())
+  userId String
+  name String
+  path String // Appwrite bucket ID
+  fileId String // Appwrite file ID
+  mimeType String?
+  size Int? // Optional: size in bytes
+  type DocumentType // Change from String to DocumentType enum
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
   @@index([userId])
 }
 
