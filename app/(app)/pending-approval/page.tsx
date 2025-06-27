@@ -26,7 +26,7 @@ export default function ApprovalPending() {
               <Mail className="h-5 w-5 text-indigo-600" />
             </div>
             <div className="flex-1">
-              <h3 className="font-semibold text-indigo-900">What's happening now?</h3>
+              <h3 className="font-semibold text-indigo-900">{`What's happening now?`}</h3>
               <p className="text-sm text-muted-foreground mt-1">
                 Our team is reviewing your profile. This usually takes 1–2 business days.
               </p>
@@ -40,7 +40,7 @@ export default function ApprovalPending() {
             <div className="flex-1">
               <h3 className="font-semibold text-indigo-900">What happens next?</h3>
               <p className="text-sm text-muted-foreground mt-1">
-                You'll receive an email notification once your profile is approved. Then you can access all features.
+                {`You'll receive an email notification once your profile is approved. Then you can access all features.`}
               </p>
             </div>
           </div>
