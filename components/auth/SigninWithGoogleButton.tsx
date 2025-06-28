@@ -9,7 +9,7 @@ export default function SigninWithGoogleButton() {
     const onSignIn = async () => {
         setIsLoading(true)
         await signIn('google', {
-            redirectTo: "/"
+            redirectTo: "/dashboard-redirect"
         })
         setIsLoading(false)
     }

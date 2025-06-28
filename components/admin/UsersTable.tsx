@@ -19,6 +19,7 @@ import {
     IconSchool,
     IconClock,
     IconCurrencyRupee,
+    IconRefresh,
 } from "@tabler/icons-react"
 import {
     ColumnDef,
@@ -40,6 +41,8 @@ import {
     DropdownMenuContent,
     DropdownMenuTrigger,
     DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
 import { Label } from "@/components/ui/label"
 import {
@@ -60,15 +63,24 @@ import {
 import {
     Dialog,
     DialogContent,
-    DialogDescription,
     DialogHeader,
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog"
 import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import {
     Card,
     CardContent,
-    CardDescription,
     CardHeader,
     CardTitle,
 } from "@/components/ui/card"
@@ -76,6 +88,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"
 import React from "react"
 import Link from "next/link"
+import { Undo } from "lucide-react"
 
 // Updated schema to match your Prisma model
 export const schema = z.object({
@@ -104,6 +117,7 @@ export const schema = z.object({
     availability: z.string().nullable(),
     createdAt: z.string(),
     updatedAt: z.string(),
+    deletedAt: z.string().nullable(),
 })
 
 type UserType = z.infer<typeof schema>
@@ -364,6 +378,144 @@ function UserDetailsDialog({ user }: { user: UserType }) {
     )
 }
 
+// Delete Confirmation Dialog Component
+function DeleteUserDialog({ user, onDelete }: { user: UserType; onDelete: () => void }) {
+    const [loading, setLoading] = React.useState(false)
+
+    const handleSoftDelete = async () => {
+        setLoading(true)
+        try {
+            const response = await fetch(`/api/users/${user.id}/soft-delete`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+            })
+
+            if (response.ok) {
+                onDelete()
+            } else {
+                console.error("Failed to soft delete user")
+            }
+        } catch (error) {
+            console.error("Error soft deleting user:", error)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const handlePermanentDelete = async () => {
+        setLoading(true)
+        try {
+            const response = await fetch(`/api/admin/users/${user.id}`, {
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" },
+            })
+
+            if (response.ok) {
+                onDelete()
+            } else {
+                console.error("Failed to permanently delete user")
+            }
+        } catch (error) {
+            console.error("Error permanently deleting user:", error)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    return (
+        <Dialog>
+            <DialogTrigger asChild>
+                <div className="flex items-center px-2 py-1.5 text-sm text-red-600 hover:bg-red-50 cursor-pointer">
+                    <IconTrash className="h-4 w-4 mr-2" />
+                    Delete User
+                </div>
+            </DialogTrigger>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Delete User</DialogTitle>
+                    <p className="text-sm text-muted-foreground">
+                        {`What type of deletion would you like to perform for user "${user.name || user.email}"?`}
+                    </p>
+                </DialogHeader>
+                <div className="flex flex-col sm:flex-row gap-2 justify-end">
+                    <Button variant="outline" onClick={() => { }}>
+                        Cancel
+                    </Button>
+                    <Button
+                        onClick={handleSoftDelete}
+                        disabled={loading}
+                        variant="secondary"
+                    >
+                        {loading ? "Deleting..." : "Soft Delete"}
+                    </Button>
+                    <Button
+                        onClick={handlePermanentDelete}
+                        disabled={loading}
+                        variant="destructive"
+                    >
+                        {loading ? "Deleting..." : "Permanent Delete"}
+                    </Button>
+                </div>
+            </DialogContent>
+        </Dialog>
+    )
+}
+
+export function RestoreUserDialog({
+  user,
+  onRestore,
+}: {
+  user: UserType
+  onRestore: () => void
+}) {
+  const [loading, setLoading] = React.useState(false)
+
+  const handleRestore = async () => {
+    setLoading(true)
+    try {
+      const res = await fetch(`/api/users/${user.id}/restore`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+      })
+
+      if (res.ok) {
+        onRestore()
+      } else {
+        console.error("Failed to restore user")
+      }
+    } catch (error) {
+      console.error("Error restoring user:", error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <div className="flex items-center px-2 py-1.5 text-sm text-green-600 hover:bg-green-50 cursor-pointer">
+          <Undo className="h-4 w-4 mr-2" />
+          Restore User
+        </div>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Restore User</DialogTitle>
+          <p className="text-sm text-muted-foreground">
+            {`Are you sure you want to restore the user "${user.name || user.email}"?`}
+          </p>
+        </DialogHeader>
+        <div className="flex justify-end gap-2 mt-4">
+          <Button variant="outline">Cancel</Button>
+          <Button onClick={handleRestore} disabled={loading} variant="default">
+            {loading ? "Restoring..." : "Restore"}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
 const columns: ColumnDef<UserType>[] = [
     {
         accessorKey: "name",
@@ -377,8 +529,17 @@ const columns: ColumnDef<UserType>[] = [
                     </AvatarFallback>
                 </Avatar>
                 <div className="flex flex-col">
-                    <Link href={"/admin/users/" + row.original.id}><span className="font-medium text-primary hover:underline">{row.original.name || "Unnamed"}</span></Link>
+                    <Link href={"/admin/users/" + row.original.id}>
+                        <span className="font-medium text-primary hover:underline">
+                            {row.original.name || "Unnamed"}
+                        </span>
+                    </Link>
                     <span className="text-xs text-muted-foreground">{row.original.email}</span>
+                    {row.original.deletedAt && (
+                        <Badge variant="destructive" className="text-xs w-fit mt-1">
+                            Deleted
+                        </Badge>
+                    )}
                 </div>
             </div>
         ),
@@ -453,16 +614,15 @@ const columns: ColumnDef<UserType>[] = [
     {
         id: "actions",
         header: "Actions",
-        cell: ({ row }) => (
+        cell: ({ row, table }) => (
             <div className="flex items-center gap-2">
-                <UserDetailsDialog user={row.original} />
                 <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm">
-                            <IconChevronDown className="h-4 w-4" />
-                        </Button>
+                    <DropdownMenuTrigger>
+                        {/* <Button variant="ghost" size="sm"> */}
+                        <IconChevronDown className="h-4 w-4" />
+                        {/* </Button> */}
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
+                    <DropdownMenuContent>
                         <DropdownMenuItem>
                             <IconEdit className="h-4 w-4 mr-2" />
                             Edit User
@@ -482,7 +642,7 @@ const columns: ColumnDef<UserType>[] = [
                                         }),
                                         headers: { "Content-Type": "application/json" },
                                     })
-                                    // Refresh the table data
+                                    // Trigger table refresh
                                     window.location.reload()
                                 }}
                             >
@@ -490,10 +650,11 @@ const columns: ColumnDef<UserType>[] = [
                             </DropdownMenuItem>
                         )}
                         <Separator />
-                        <DropdownMenuItem className="text-red-600">
-                            <IconTrash className="h-4 w-4 mr-2" />
-                            Delete User
-                        </DropdownMenuItem>
+                        <DeleteUserDialog
+                            user={row.original}
+                            onDelete={() => window.location.reload()}
+                        />
+                        {row.original.deletedAt && <RestoreUserDialog user={row.original} onRestore={() => window.location.reload()} />}
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>
@@ -503,7 +664,10 @@ const columns: ColumnDef<UserType>[] = [
 
 function DraggableRow({ row }: { row: Row<UserType> }) {
     return (
-        <TableRow data-state={row.getIsSelected() && "selected"}>
+        <TableRow
+            data-state={row.getIsSelected() && "selected"}
+            className={row.original.deletedAt ? "opacity-60" : ""}
+        >
             {row.getVisibleCells().map((cell) => (
                 <TableCell key={cell.id}>
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -516,7 +680,7 @@ function DraggableRow({ row }: { row: Row<UserType> }) {
 export default function UserTable() {
     const [data, setData] = React.useState<UserType[]>([])
     const [total, setTotal] = React.useState(0)
-    const [loading, setLoading] = React.useState(false)
+    const [loading, setLoading] = React.useState(true)
     const [rowSelection, setRowSelection] = React.useState({})
     const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
@@ -527,6 +691,7 @@ export default function UserTable() {
     })
     const [roleFilter, setRoleFilter] = React.useState<string>("all")
     const [statusFilter, setStatusFilter] = React.useState<string>("all")
+    const [deletedFilter, setDeletedFilter] = React.useState<string>("active")
 
     const fetchUsers = async (page: number, size: number) => {
         setLoading(true)
@@ -544,6 +709,10 @@ export default function UserTable() {
                 params.append("status", statusFilter)
             }
 
+            if (deletedFilter !== "all") {
+                params.append("deleted", deletedFilter)
+            }
+
             const res = await fetch(`/api/admin/users?${params.toString()}`)
             const json = await res.json()
             setData(json.users)
@@ -555,9 +724,13 @@ export default function UserTable() {
         }
     }
 
+    const handleRefresh = () => {
+        fetchUsers(pagination.pageIndex, pagination.pageSize)
+    }
+
     React.useEffect(() => {
         fetchUsers(pagination.pageIndex, pagination.pageSize)
-    }, [pagination.pageIndex, pagination.pageSize, roleFilter, statusFilter])
+    }, [pagination.pageIndex, pagination.pageSize, roleFilter, statusFilter, deletedFilter])
 
     const table = useReactTable({
         data,
@@ -605,18 +778,38 @@ export default function UserTable() {
                             <SelectItem value="REJECTED">Rejected</SelectItem>
                         </SelectContent>
                     </Select>
+
+                    <Select value={deletedFilter} onValueChange={setDeletedFilter}>
+                        <SelectTrigger className="w-48">
+                            <SelectValue placeholder="Filter by deleted" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="active">Active Users</SelectItem>
+                            <SelectItem value="deleted">Deleted Users</SelectItem>
+                            <SelectItem value="all">All Users</SelectItem>
+                        </SelectContent>
+                    </Select>
                 </div>
 
                 <div className="flex items-center gap-2">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleRefresh}
+                        disabled={loading}
+                    >
+                        <IconRefresh className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+                        <span className="hidden lg:inline">Refresh</span>
+                    </Button>
                     <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
+                        <DropdownMenuTrigger>
                             <Button variant="outline" size="sm">
                                 <IconLayoutColumns className="h-4 w-4" />
                                 <span className="hidden lg:inline">Columns</span>
                                 <IconChevronDown className="h-4 w-4" />
                             </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-56">
+                        <DropdownMenuContent>
                             {table
                                 .getAllColumns()
                                 .filter((column) => column.getCanHide())
@@ -757,6 +950,6 @@ export default function UserTable() {
                     </div>
                 </div>
             </div>
-        </div>
+        </div >
     )
 }

@@ -1,4 +1,4 @@
-import { mg, sendMailgunEmail } from "@/lib/mailgun"
+import { sendMailgunEmail } from "@/lib/mailgun"
 import { prisma } from "@/prisma"
 import { NextResponse } from "next/server"
 

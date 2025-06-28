@@ -29,6 +29,7 @@ model User {
   experience    Int?      // Teaching experience in years
   hourlyRate    Int?      // Hourly rate in INR
   specialization String?
+  deletedAt     DateTime?
   
   // Arrays stored as comma-separated strings
   subjects      String?   // Comma-separated subjects
