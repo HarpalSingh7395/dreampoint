@@ -3,12 +3,13 @@ import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Bell, Clock, Mail, LogOut } from "lucide-react"
 import { signOut } from "next-auth/react" // Assuming you're using next-auth
+import Link from "next/link"
 
 export default function ApprovalPending() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-100 to-indigo-200 flex items-center justify-center p-6">
       <Card className="w-full max-w-md shadow-xl rounded-2xl border border-indigo-200 bg-white pt-0 pb-0">
-        <CardHeader className="bg-indigo-600 p-6 rounded-t-2xl">
+        <CardHeader className=" bg-gradient-to-tr from-blue-500 via-purple-500 to-indigo-500 p-6 rounded-t-2xl">
           <div className="flex flex-col items-center space-y-3">
             <Clock className="h-12 w-12 text-white" />
             <h1 className="text-2xl font-bold text-white text-center">
@@ -47,8 +48,10 @@ export default function ApprovalPending() {
         </CardContent>
 
         <CardFooter className="bg-gray-50 p-6 flex flex-col sm:flex-row sm:justify-between gap-3 rounded-b-2xl">
-          <Button variant="ghost" className="text-indigo-600 hover:text-indigo-700 w-full sm:w-auto">
-            Contact Support
+          <Button variant="ghost" className="text-indigo-600 hover:text-indigo-700 w-full sm:w-auto" asChild>
+            <Link href={"mailto:support@mypathshaala.com"}>
+              Contact Support
+            </Link>
           </Button>
           <Button
             variant="outline"

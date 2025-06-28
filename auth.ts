@@ -25,11 +25,11 @@ declare module "next-auth" {
   }
 }
 
-export const { handlers, auth, signIn, signOut } = NextAuth({
+export const { handlers, auth, signIn, signOut, unstable_update } = NextAuth({
   adapter: PrismaAdapter(prisma),
   providers: [
     Mailgun({
-      from: "test@sandbox2ebecabb31ab4e5595ae9e264095a200.mailgun.org",
+      from: process.env.MAILGUN_FROM_ADDRESS,
     }),
     Google,
   ],
@@ -39,11 +39,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
   debug: true,
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, session, trigger }) {
       // Only on initial sign-in
       if (user) {
         token.role = user.role
         token.profileStatus = user.profileStatus
+      }
+      console.log({trigger, session})
+      if(trigger == "update" && session) {
+        if(session?.role) token.role = session?.role
+        if(session?.profileStatus) token.profileStatus = session?.profileStatus
       }
       return token
     },

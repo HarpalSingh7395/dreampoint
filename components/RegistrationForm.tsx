@@ -21,6 +21,8 @@ import { useSession } from 'next-auth/react'
 import LogoIcon from './icons/LogoIcon'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
+import LogoutButton from './auth/LogoutButton'
+import { ProfileStatus, Role } from '@prisma/client'
 
 // File validation helper
 const fileSchema = z.custom<FileList>((val) => {
@@ -63,7 +65,7 @@ const teacherSchema = baseSchema.extend({
     userType: z.literal('teacher'),
     teachingGrades: z.array(z.string()).min(1, "Please select at least one grade level"),
     experience: z.number().min(0, "Experience cannot be negative"),
-    hourlyRate: z.number().min(100, "Hourly rate must be at least ₹100"),
+    // hourlyRate: z.number().min(100, "Hourly rate must be at least ₹100"),
     specialization: z.string().optional(),
     availability: z.array(z.string()).min(1, "Please select at least one day"),
     bio: z.string().optional(),
@@ -92,7 +94,7 @@ export function RegistrationForm({
     className,
     ...props
 }: React.ComponentProps<"div">) {
-    const { data: session } = useSession();
+    const { data: session, update } = useSession();
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
     const [profilePreview, setProfilePreview] = useState<string | null>(null);
     const router = useRouter()
@@ -156,14 +158,17 @@ export function RegistrationForm({
                 method: "POST",
                 body: formData,
             });
-
             const result = await res.json();
+            await update({
+                role: data.userType === 'teacher' ? Role.TEACHER : Role.STUDENT,
+                profileStatus: ProfileStatus.PENDING_APPROVAL
+            })
             if (!res.ok) {
                 console.error("Registration failed:", result.error || result);
             } else {
                 console.log("Registration successful:", result);
             }
-            router.push("/pending-approval")
+            router.push("/dashboard-redirect")
         } catch (err) {
             console.error("Unexpected error during registration:", err);
         } finally {
@@ -174,16 +179,20 @@ export function RegistrationForm({
     return (
         <div className={cn("max-w-4xl mx-auto space-y-8", className)} {...props}>
             {/* Header */}
-            <div className="flex flex-col items-center gap-4">
-                <div className="flex items-center gap-2">
-                    <div className="flex size-10 items-center justify-center rounded-md bg-primary">
-                        <LogoIcon variant='base' className="size-6 text-primary-foreground" />
-                    </div>
-                    <h1 className="text-2xl font-bold">My Pathshaala Registration</h1>
+            <div className="relative">
+                <div className="absolute top-0 right-0 sm:static sm:flex w-auto self-end justify-end">
+                    <LogoutButton variant='ghost' size='sm' className="text-xs" />
                 </div>
-                <p className="text-muted-foreground text-center">Complete your profile to get started</p>
+                <div className="flex flex-col items-center gap-4 pr-16 sm:pr-0">
+                    <div className="flex items-center gap-2">
+                        <div className="flex size-10 items-center justify-center rounded-md bg-primary">
+                            <LogoIcon variant='base' className="size-6 text-primary-foreground" />
+                        </div>
+                        <h1 className="text-lg md:text-2xl font-bold">My Pathshaala</h1>
+                    </div>
+                    <p className="text-muted-foreground text-center">Complete your profile to get started</p>
+                </div>
             </div>
-
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
                     {/* User Type Selection */}
@@ -581,27 +590,27 @@ export function RegistrationForm({
                                         )}
                                     />
 
-                                    <div className="grid gap-4 sm:grid-cols-2">
-                                        <FormField
-                                            control={form.control}
-                                            name="experience"
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel>Teaching Experience (Years) *</FormLabel>
-                                                    <FormControl>
-                                                        <Input
-                                                            type="number"
-                                                            placeholder="5"
-                                                            min="0"
-                                                            {...field}
-                                                            onChange={(e) => field.onChange(parseInt(e.target.value))}
-                                                        />
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-                                        <FormField
+                                    {/* <div className="grid gap-4 sm:grid-cols-2"> */}
+                                    <FormField
+                                        control={form.control}
+                                        name="experience"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Teaching Experience (Years) *</FormLabel>
+                                                <FormControl>
+                                                    <Input
+                                                        type="number"
+                                                        placeholder="5"
+                                                        min="0"
+                                                        {...field}
+                                                        onChange={(e) => field.onChange(parseInt(e.target.value))}
+                                                    />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    {/* <FormField
                                             control={form.control}
                                             name="hourlyRate"
                                             render={({ field }) => (
@@ -619,8 +628,8 @@ export function RegistrationForm({
                                                     <FormMessage />
                                                 </FormItem>
                                             )}
-                                        />
-                                    </div>
+                                        /> */}
+                                    {/* </div> */}
 
                                     <FormField
                                         control={form.control}

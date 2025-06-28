@@ -132,6 +132,14 @@ export default function Header() {
               {/* Mobile Navigation */}
               <nav className="flex-1 overflow-y-auto p-4">
                 <div className="space-y-2">
+                  {status === "authenticated" && <Link
+                    key={"dashboard"}
+                    href={dashboardLink}
+                    className="flex items-center space-x-3 rounded-lg px-3 py-3 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <span>Dashboard</span>
+                  </Link>}
                   {navigationItems.map((item) => (
                     <Link
                       key={item.href}

@@ -21,7 +21,7 @@ export async function POST(req: Request) {
         const currentGrade = formData.get('currentGrade') as string | null
         const subjects = formData.get('subjects') as string
         const experience = formData.get('experience') ? parseInt(formData.get('experience') as string) : null
-        const hourlyRate = formData.get('hourlyRate') ? parseInt(formData.get('hourlyRate') as string) : null
+        // const hourlyRate = formData.get('hourlyRate') ? parseInt(formData.get('hourlyRate') as string) : null
         const specialization = formData.get('specialization') as string | null
         const availability = formData.get('availability') as string | null
         const bio = formData.get('bio') as string | null
@@ -95,7 +95,7 @@ export async function POST(req: Request) {
                         currentGrade,
                         subjects,
                         experience,
-                        hourlyRate,
+                        // hourlyRate,
                         specialization,
                         availability,
                         bio,
@@ -120,7 +120,7 @@ export async function POST(req: Request) {
                         currentGrade,
                         subjects,
                         experience,
-                        hourlyRate,
+                        // hourlyRate,
                         specialization,
                         availability,
                         bio,
