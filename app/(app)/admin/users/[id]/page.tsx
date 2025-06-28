@@ -26,6 +26,8 @@ import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Document, ProfileStatus, Role, User } from '@prisma/client'
+import { storage } from '@/lib/appwrite'
+import { ApproveButton } from '@/components/admin/ApproveButton'
 
 
 export default function UserDetailsPage({
@@ -37,6 +39,7 @@ export default function UserDetailsPage({
   const [user, setUser] = useState<User & { documents: Document[] } | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [fileUrls, setFileUrls] = useState<{ [fileId: string]: { preview: string; download: string } }>({})
 
   useEffect(() => {
     // Simulate API call
@@ -59,6 +62,30 @@ export default function UserDetailsPage({
     //   setLoading(false)
     // }, 1000)
   }, [id])
+
+
+  useEffect(() => {
+    if (!user) return;
+    const fetchUrls = async () => {
+      const urls: any = {}
+
+      for (const doc of user.documents) {
+        urls[doc.fileId] = {
+          preview: storage.getFilePreview(doc.path, doc.fileId),
+          download: storage.getFileDownload(doc.path, doc.fileId)
+        }
+      }
+
+      setFileUrls(urls)
+    }
+
+    if (user?.documents?.length) {
+      fetchUrls()
+    }
+  }, [user])
+
+  //@ts-ignore
+  const onApprove = (user: User) => setUser(oldUser => ({ ...oldUser, profileStatus: user.profileStatus }));
 
   const getStatusColor = (status: ProfileStatus) => {
     switch (status) {
@@ -466,34 +493,39 @@ export default function UserDetailsPage({
             </CardHeader>
             <CardContent>
               <div className="grid gap-4">
-                {user.documents.map((document) => (
-                  <div key={document.id} className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <FileText className="size-8 text-muted-foreground" />
-                      <div>
-                        <h4 className="font-medium">{document.name}</h4>
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <span>{document.type.replace('_', ' ')}</span>
-                          <span>•</span>
-                          {document.size && <span>{formatBytes(document.size)}</span>}
-                          <span>•</span>
-                          <span>{formatDate(document.createdAt?.toString())}</span>
+                {user.documents.length > 0 ? (
+                  user.documents.map((document: any) => (
+                    <div key={document.id} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <FileText className="size-8 text-muted-foreground" />
+                        <div>
+                          <h4 className="font-medium">{document.name}</h4>
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <span>{document.type.replace('_', ' ')}</span>
+                            <span>•</span>
+                            {document.size && <span>{formatBytes(document.size)}</span>}
+                            <span>•</span>
+                            <span>{formatDate(document.createdAt?.toString())}</span>
+                          </div>
                         </div>
                       </div>
+                      <div className="flex items-center gap-2">
+                        <a href={fileUrls[document.fileId]?.preview} target="_blank" rel="noopener noreferrer">
+                          <Button disabled={!!!fileUrls[document.fileId]?.preview} variant="outline" size="sm">
+                            <Eye className="size-4 mr-2" />
+                            View
+                          </Button>
+                        </a>
+                        <a href={fileUrls[document.fileId]?.download} target="_blank" rel="noopener noreferrer">
+                          <Button disabled={!!!fileUrls[document.fileId]?.download} variant="outline" size="sm">
+                            <Download className="size-4 mr-2" />
+                            Download
+                          </Button>
+                        </a>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Button variant="outline" size="sm">
-                        <Eye className="size-4 mr-2" />
-                        View
-                      </Button>
-                      <Button variant="outline" size="sm">
-                        <Download className="size-4 mr-2" />
-                        Download
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-                {user.documents.length === 0 && (
+                  ))
+                ) : (
                   <div className="text-center py-8 text-muted-foreground">
                     <FileText className="size-12 mx-auto mb-4 opacity-50" />
                     <p>No documents uploaded</p>
@@ -504,6 +536,7 @@ export default function UserDetailsPage({
           </Card>
         </TabsContent>
       </Tabs>
+      {user && <div className='w-full flex justify-end items-center'><ApproveButton user={user} onApprove={onApprove} /></div>}
     </div>
   )
 }
