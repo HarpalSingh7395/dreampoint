@@ -34,7 +34,7 @@ import {
 } from "@tanstack/react-table"
 import { z } from "zod"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import { Button, buttonVariants } from "@/components/ui/button"
 import {
     DropdownMenu,
     DropdownMenuCheckboxItem,
@@ -462,58 +462,58 @@ function DeleteUserDialog({ user, onDelete }: { user: UserType; onDelete: () => 
 }
 
 export function RestoreUserDialog({
-  user,
-  onRestore,
+    user,
+    onRestore,
 }: {
-  user: UserType
-  onRestore: () => void
+    user: UserType
+    onRestore: () => void
 }) {
-  const [loading, setLoading] = React.useState(false)
+    const [loading, setLoading] = React.useState(false)
 
-  const handleRestore = async () => {
-    setLoading(true)
-    try {
-      const res = await fetch(`/api/users/${user.id}/restore`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-      })
+    const handleRestore = async () => {
+        setLoading(true)
+        try {
+            const res = await fetch(`/api/users/${user.id}/restore`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+            })
 
-      if (res.ok) {
-        onRestore()
-      } else {
-        console.error("Failed to restore user")
-      }
-    } catch (error) {
-      console.error("Error restoring user:", error)
-    } finally {
-      setLoading(false)
+            if (res.ok) {
+                onRestore()
+            } else {
+                console.error("Failed to restore user")
+            }
+        } catch (error) {
+            console.error("Error restoring user:", error)
+        } finally {
+            setLoading(false)
+        }
     }
-  }
 
-  return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <div className="flex items-center px-2 py-1.5 text-sm text-green-600 hover:bg-green-50 cursor-pointer">
-          <Undo className="h-4 w-4 mr-2" />
-          Restore User
-        </div>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Restore User</DialogTitle>
-          <p className="text-sm text-muted-foreground">
-            {`Are you sure you want to restore the user "${user.name || user.email}"?`}
-          </p>
-        </DialogHeader>
-        <div className="flex justify-end gap-2 mt-4">
-          <Button variant="outline">Cancel</Button>
-          <Button onClick={handleRestore} disabled={loading} variant="default">
-            {loading ? "Restoring..." : "Restore"}
-          </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
-  )
+    return (
+        <Dialog>
+            <DialogTrigger asChild>
+                <div className="flex items-center px-2 py-1.5 text-sm text-green-600 hover:bg-green-50 cursor-pointer">
+                    <Undo className="h-4 w-4 mr-2" />
+                    Restore User
+                </div>
+            </DialogTrigger>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Restore User</DialogTitle>
+                    <p className="text-sm text-muted-foreground">
+                        {`Are you sure you want to restore the user "${user.name || user.email}"?`}
+                    </p>
+                </DialogHeader>
+                <div className="flex justify-end gap-2 mt-4">
+                    <Button variant="outline">Cancel</Button>
+                    <Button onClick={handleRestore} disabled={loading} variant="default">
+                        {loading ? "Restoring..." : "Restore"}
+                    </Button>
+                </div>
+            </DialogContent>
+        </Dialog>
+    )
 }
 
 const columns: ColumnDef<UserType>[] = [
@@ -618,9 +618,12 @@ const columns: ColumnDef<UserType>[] = [
             <div className="flex items-center gap-2">
                 <DropdownMenu>
                     <DropdownMenuTrigger>
-                        {/* <Button variant="ghost" size="sm"> */}
-                        <IconChevronDown className="h-4 w-4" />
-                        {/* </Button> */}
+                        <div className={buttonVariants({
+                            size: "sm",
+                            variant: "outline"
+                        })}>
+                            <IconChevronDown className="h-4 w-4" />
+                        </div>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
                         <DropdownMenuItem>
@@ -803,11 +806,14 @@ export default function UserTable() {
                     </Button>
                     <DropdownMenu>
                         <DropdownMenuTrigger>
-                            <Button variant="outline" size="sm">
+                            <div className={buttonVariants({
+                                size: "sm",
+                                variant: "outline"
+                            })}>
                                 <IconLayoutColumns className="h-4 w-4" />
                                 <span className="hidden lg:inline">Columns</span>
                                 <IconChevronDown className="h-4 w-4" />
-                            </Button>
+                            </div>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent>
                             {table
@@ -826,10 +832,10 @@ export default function UserTable() {
                         </DropdownMenuContent>
                     </DropdownMenu>
 
-                    <Button variant="default" size="sm">
+                    {/* <Button variant="default" size="sm">
                         <IconPlus className="h-4 w-4" />
                         <span className="hidden lg:inline">Add User</span>
-                    </Button>
+                    </Button> */}
                 </div>
             </div>
 
