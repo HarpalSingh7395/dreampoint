@@ -53,7 +53,7 @@ export function LoginForm({ className, error, ...props }: LoginFormProps) {
             </a>
             <h1 className="text-xl font-bold">Sign In to My Pathshaala</h1>
             <p className="text-sm text-muted-foreground text-center">
-              We use secure magic links and SSO \u2014 no passwords required.
+              We use secure magic links and SSO - no passwords required.
             </p>
           </div>
           <div className="grid gap-4">

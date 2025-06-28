@@ -1,7 +1,15 @@
+import Link from "next/link";
+import AnimatedButton from "../AnimatedButton";
+
 const ApplicationForm = () => {
   return (
-    <section>
-      <div className="text-center mb-16">
+    <section className="flex justify-center items-center w-full">
+      <AnimatedButton variant="secondary">
+        <Link href={"/login"}>
+          👨‍🏫 Teach With Us
+        </Link>
+      </AnimatedButton>
+      {/* <div className="text-center mb-16">
         <h2 className="text-3xl md:text-5xl font-bold bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent mb-4">
           Apply Now
         </h2>
@@ -122,24 +130,24 @@ const ApplicationForm = () => {
             </form>
           </div>
         </div>
-      </div>
+      </div> */}
     </section>
   );
 };
 
-const FormField = ({ label, type, id, name, placeholder }: { label: string, type: string, id: string, name: string, placeholder?: string }) => (
-  <div>
-    <label htmlFor={id} className="block text-sm font-bold text-gray-800 mb-2">
-      {label}
-    </label>
-    <input 
-      type={type} 
-      id={id} 
-      name={name} 
-      placeholder={placeholder}
-      className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-blue-500 focus:outline-none transition-colors duration-200 bg-white/80 backdrop-blur-sm"
-    />
-  </div>
-);
+// const FormField = ({ label, type, id, name, placeholder }: { label: string, type: string, id: string, name: string, placeholder?: string }) => (
+//   <div>
+//     <label htmlFor={id} className="block text-sm font-bold text-gray-800 mb-2">
+//       {label}
+//     </label>
+//     <input
+//       type={type}
+//       id={id}
+//       name={name}
+//       placeholder={placeholder}
+//       className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-blue-500 focus:outline-none transition-colors duration-200 bg-white/80 backdrop-blur-sm"
+//     />
+//   </div>
+// );
 
 export default ApplicationForm;

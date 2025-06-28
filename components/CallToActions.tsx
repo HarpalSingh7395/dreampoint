@@ -1,6 +1,7 @@
 import React from 'react'
 import FloatingElement from './FloatingElement'
 import AnimatedButton from './AnimatedButton'
+import Link from 'next/link'
 
 export default function CallToActions() {
     return (
@@ -71,14 +72,18 @@ export default function CallToActions() {
                     {/* CTA Buttons */}
                     <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6">
                         <AnimatedButton variant="primary">
-                            🎯 Start Learning Now
+                            <Link href={"/login"}>
+                                🎯 Start Learning Now
+                            </Link>
                         </AnimatedButton>
                         <AnimatedButton variant="secondary">
-                            👨‍🏫 Teach With Us
+                            <Link href={"/login"}>
+                                👨‍🏫 Teach With Us
+                            </Link>
                         </AnimatedButton>
                     </div>
 
-                    
+
                 </div>
             </div>
         </section >

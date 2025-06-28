@@ -8,6 +8,17 @@ import {
     IconChevronsRight,
     IconLayoutColumns,
     IconPlus,
+    IconEye,
+    IconEdit,
+    IconTrash,
+    IconFileText,
+    IconMail,
+    IconPhone,
+    IconMapPin,
+    IconUser,
+    IconSchool,
+    IconClock,
+    IconCurrencyRupee,
 } from "@tabler/icons-react"
 import {
     ColumnDef,
@@ -28,6 +39,7 @@ import {
     DropdownMenuCheckboxItem,
     DropdownMenuContent,
     DropdownMenuTrigger,
+    DropdownMenuItem,
 } from "@/components/ui/dropdown-menu"
 import { Label } from "@/components/ui/label"
 import {
@@ -45,74 +57,453 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog"
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from "@/components/ui/card"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Separator } from "@/components/ui/separator"
 import React from "react"
+import Link from "next/link"
 
+// Updated schema to match your Prisma model
 export const schema = z.object({
     id: z.string(),
     name: z.string().nullable(),
     email: z.string().nullable(),
-    role: z.enum(["ADMIN", "TEACHER", "STUDENT"]),
-    approved: z.boolean(),
+    image: z.string().nullable(),
+    phoneNumber: z.string().nullable(),
+    address: z.string().nullable(),
+    role: z.enum(["SUPER_ADMIN", "ADMIN", "TEACHER", "STUDENT", "BASE_USER"]),
+    age: z.number().nullable(),
+    city: z.string().nullable(),
+    state: z.string().nullable(),
+    zipCode: z.string().nullable(),
+    qualification: z.string().nullable(),
+    extraQualifications: z.any().nullable(),
+    institution: z.string().nullable(),
+    currentGrade: z.string().nullable(),
+    profileStatus: z.enum(["INCOMPLETE", "PENDING_APPROVAL", "APPROVED", "REJECTED"]),
+    bio: z.string().nullable(),
+    experience: z.number().nullable(),
+    hourlyRate: z.number().nullable(),
+    specialization: z.string().nullable(),
+    subjects: z.string().nullable(),
+    teachingGrades: z.string().nullable(),
+    availability: z.string().nullable(),
     createdAt: z.string(),
+    updatedAt: z.string(),
 })
 
+type UserType = z.infer<typeof schema>
 
-const columns: ColumnDef<z.infer<typeof schema>>[] = [
+// User Details Dialog Component
+function UserDetailsDialog({ user }: { user: UserType }) {
+    const getRoleColor = (role: string) => {
+        switch (role) {
+            case "SUPER_ADMIN": return "bg-red-100 text-red-800"
+            case "ADMIN": return "bg-purple-100 text-purple-800"
+            case "TEACHER": return "bg-blue-100 text-blue-800"
+            case "STUDENT": return "bg-green-100 text-green-800"
+            default: return "bg-gray-100 text-gray-800"
+        }
+    }
+
+    const getStatusColor = (status: string) => {
+        switch (status) {
+            case "APPROVED": return "bg-green-100 text-green-800"
+            case "PENDING_APPROVAL": return "bg-yellow-100 text-yellow-800"
+            case "REJECTED": return "bg-red-100 text-red-800"
+            default: return "bg-gray-100 text-gray-800"
+        }
+    }
+
+    return (
+        <Dialog>
+            <DialogTrigger asChild>
+                <Button variant="ghost" size="sm">
+                    <IconEye className="h-4 w-4" />
+                </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                    <DialogTitle className="flex items-center gap-3">
+                        <Avatar className="h-12 w-12">
+                            <AvatarImage src={user.image || ""} alt={user.name || ""} />
+                            <AvatarFallback>
+                                {user.name?.charAt(0)?.toUpperCase() || "U"}
+                            </AvatarFallback>
+                        </Avatar>
+                        <div>
+                            <h2 className="text-xl font-semibold">{user.name || "Unnamed User"}</h2>
+                            <p className="text-sm text-muted-foreground">{user.email}</p>
+                        </div>
+                    </DialogTitle>
+                </DialogHeader>
+
+                <div className="grid gap-6">
+                    {/* Basic Information */}
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2">
+                                <IconUser className="h-5 w-5" />
+                                Basic Information
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="grid gap-4 md:grid-cols-2">
+                            <div className="space-y-2">
+                                <Label className="text-sm font-medium">Role</Label>
+                                <Badge className={getRoleColor(user.role)}>
+                                    {user.role.replace("_", " ")}
+                                </Badge>
+                            </div>
+                            <div className="space-y-2">
+                                <Label className="text-sm font-medium">Profile Status</Label>
+                                <Badge className={getStatusColor(user.profileStatus)}>
+                                    {user.profileStatus.replace("_", " ")}
+                                </Badge>
+                            </div>
+                            {user.age && (
+                                <div className="space-y-2">
+                                    <Label className="text-sm font-medium">Age</Label>
+                                    <p className="text-sm">{user.age} years</p>
+                                </div>
+                            )}
+                            <div className="space-y-2">
+                                <Label className="text-sm font-medium">Member Since</Label>
+                                <p className="text-sm">{new Date(user.createdAt).toLocaleDateString()}</p>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* Contact Information */}
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2">
+                                <IconMail className="h-5 w-5" />
+                                Contact Information
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="grid gap-4 md:grid-cols-2">
+                            {user.phoneNumber && (
+                                <div className="space-y-2">
+                                    <Label className="text-sm font-medium flex items-center gap-2">
+                                        <IconPhone className="h-4 w-4" />
+                                        Phone Number
+                                    </Label>
+                                    <p className="text-sm">{user.phoneNumber}</p>
+                                </div>
+                            )}
+                            {user.address && (
+                                <div className="space-y-2">
+                                    <Label className="text-sm font-medium flex items-center gap-2">
+                                        <IconMapPin className="h-4 w-4" />
+                                        Address
+                                    </Label>
+                                    <p className="text-sm">{user.address}</p>
+                                </div>
+                            )}
+                            {user.city && (
+                                <div className="space-y-2">
+                                    <Label className="text-sm font-medium">City</Label>
+                                    <p className="text-sm">{user.city}</p>
+                                </div>
+                            )}
+                            {user.state && (
+                                <div className="space-y-2">
+                                    <Label className="text-sm font-medium">State</Label>
+                                    <p className="text-sm">{user.state}</p>
+                                </div>
+                            )}
+                            {user.zipCode && (
+                                <div className="space-y-2">
+                                    <Label className="text-sm font-medium">Zip Code</Label>
+                                    <p className="text-sm">{user.zipCode}</p>
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+
+                    {/* Education & Professional Information */}
+                    {(user.qualification || user.institution || user.currentGrade) && (
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2">
+                                    <IconSchool className="h-5 w-5" />
+                                    Education Information
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="grid gap-4 md:grid-cols-2">
+                                {user.qualification && (
+                                    <div className="space-y-2">
+                                        <Label className="text-sm font-medium">Qualification</Label>
+                                        <p className="text-sm">{user.qualification}</p>
+                                    </div>
+                                )}
+                                {user.institution && (
+                                    <div className="space-y-2">
+                                        <Label className="text-sm font-medium">Institution</Label>
+                                        <p className="text-sm">{user.institution}</p>
+                                    </div>
+                                )}
+                                {user.currentGrade && (
+                                    <div className="space-y-2">
+                                        <Label className="text-sm font-medium">Current Grade</Label>
+                                        <p className="text-sm">{user.currentGrade}</p>
+                                    </div>
+                                )}
+                                {user.extraQualifications && (
+                                    <div className="space-y-2 md:col-span-2">
+                                        <Label className="text-sm font-medium">Extra Qualifications</Label>
+                                        <p className="text-sm">{JSON.stringify(user.extraQualifications)}</p>
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
+                    )}
+
+                    {/* Teaching Information (for Teachers) */}
+                    {user.role === "TEACHER" && (user.experience || user.hourlyRate || user.specialization || user.subjects) && (
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2">
+                                    <IconSchool className="h-5 w-5" />
+                                    Teaching Information
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="grid gap-4 md:grid-cols-2">
+                                {user.experience && (
+                                    <div className="space-y-2">
+                                        <Label className="text-sm font-medium flex items-center gap-2">
+                                            <IconClock className="h-4 w-4" />
+                                            Experience
+                                        </Label>
+                                        <p className="text-sm">{user.experience} years</p>
+                                    </div>
+                                )}
+                                {user.hourlyRate && (
+                                    <div className="space-y-2">
+                                        <Label className="text-sm font-medium flex items-center gap-2">
+                                            <IconCurrencyRupee className="h-4 w-4" />
+                                            Hourly Rate
+                                        </Label>
+                                        <p className="text-sm">₹{user.hourlyRate}/hour</p>
+                                    </div>
+                                )}
+                                {user.specialization && (
+                                    <div className="space-y-2">
+                                        <Label className="text-sm font-medium">Specialization</Label>
+                                        <p className="text-sm">{user.specialization}</p>
+                                    </div>
+                                )}
+                                {user.subjects && (
+                                    <div className="space-y-2">
+                                        <Label className="text-sm font-medium">Subjects</Label>
+                                        <div className="flex flex-wrap gap-1">
+                                            {user.subjects.split(',').map((subject, index) => (
+                                                <Badge key={index} variant="secondary" className="text-xs">
+                                                    {subject.trim()}
+                                                </Badge>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                                {user.teachingGrades && (
+                                    <div className="space-y-2">
+                                        <Label className="text-sm font-medium">Teaching Grades</Label>
+                                        <div className="flex flex-wrap gap-1">
+                                            {user.teachingGrades.split(',').map((grade, index) => (
+                                                <Badge key={index} variant="outline" className="text-xs">
+                                                    {grade.trim()}
+                                                </Badge>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                                {user.availability && (
+                                    <div className="space-y-2 md:col-span-2">
+                                        <Label className="text-sm font-medium">Availability</Label>
+                                        <div className="flex flex-wrap gap-1">
+                                            {user.availability.split(',').map((day, index) => (
+                                                <Badge key={index} variant="outline" className="text-xs">
+                                                    {day.trim()}
+                                                </Badge>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
+                    )}
+
+                    {/* Bio */}
+                    {user.bio && (
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Bio</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <p className="text-sm text-muted-foreground">{user.bio}</p>
+                            </CardContent>
+                        </Card>
+                    )}
+                </div>
+            </DialogContent>
+        </Dialog>
+    )
+}
+
+const columns: ColumnDef<UserType>[] = [
     {
         accessorKey: "name",
         header: "Name",
-    },
-    {
-        accessorKey: "email",
-        header: "Email",
-    },
-    {
-        accessorKey: "address",
-        header: "Address",
-    },
-    {
-        accessorKey: "phoneNumber",
-        header: "Phone",
+        cell: ({ row }) => (
+            <div className="flex items-center gap-3">
+                <Avatar className="h-8 w-8">
+                    <AvatarImage src={row.original.image || ""} alt={row.original.name || ""} />
+                    <AvatarFallback>
+                        {row.original.name?.charAt(0)?.toUpperCase() || "U"}
+                    </AvatarFallback>
+                </Avatar>
+                <div className="flex flex-col">
+                    <Link href={"/admin/users/" + row.original.id}><span className="font-medium text-primary hover:underline">{row.original.name || "Unnamed"}</span></Link>
+                    <span className="text-xs text-muted-foreground">{row.original.email}</span>
+                </div>
+            </div>
+        ),
     },
     {
         accessorKey: "role",
         header: "Role",
+        cell: ({ row }) => {
+            const getRoleColor = (role: string) => {
+                switch (role) {
+                    case "SUPER_ADMIN": return "bg-red-100 text-red-800"
+                    case "ADMIN": return "bg-purple-100 text-purple-800"
+                    case "TEACHER": return "bg-blue-100 text-blue-800"
+                    case "STUDENT": return "bg-green-100 text-green-800"
+                    default: return "bg-gray-100 text-gray-800"
+                }
+            }
+            return (
+                <Badge className={getRoleColor(row.original.role)}>
+                    {row.original.role.replace("_", " ")}
+                </Badge>
+            )
+        },
+    },
+    {
+        accessorKey: "profileStatus",
+        header: "Status",
+        cell: ({ row }) => {
+            const getStatusColor = (status: string) => {
+                switch (status) {
+                    case "APPROVED": return "bg-green-100 text-green-800"
+                    case "PENDING_APPROVAL": return "bg-yellow-100 text-yellow-800"
+                    case "REJECTED": return "bg-red-100 text-red-800"
+                    default: return "bg-gray-100 text-gray-800"
+                }
+            }
+            return (
+                <Badge className={getStatusColor(row.original.profileStatus)}>
+                    {row.original.profileStatus.replace("_", " ")}
+                </Badge>
+            )
+        },
+    },
+    {
+        accessorKey: "city",
+        header: "Location",
         cell: ({ row }) => (
-            <Badge variant="outline" className="capitalize">
-                {row.original.role.toLowerCase()}
-            </Badge>
+            <div className="flex items-center gap-1">
+                <IconMapPin className="h-3 w-3 text-muted-foreground" />
+                <span className="text-sm">
+                    {[row.original.city, row.original.state].filter(Boolean).join(", ") || "Not specified"}
+                </span>
+            </div>
         ),
     },
     {
-        accessorKey: "approved",
-        header: "Approved",
-        cell: ({ row }) =>
-            row.original.approved ? (
-                <span className="text-green-500 font-semibold">Yes</span>
-            ) : (
-                <Button
-                    size="sm"
-                    onClick={async () => {
-                        await fetch("/api/admin/approve-user", {
-                            method: "POST",
-                            body: JSON.stringify({ id: row.original.id }),
-                            headers: { "Content-Type": "application/json" },
-                        })
-                        // fetchUsers(pagination.pageIndex, pagination.pageSize)
-                    }}
-                >
-                    Approve
-                </Button>
-            ),
+        accessorKey: "phoneNumber",
+        header: "Phone",
+        cell: ({ row }) => (
+            <span className="text-sm">{row.original.phoneNumber || "Not provided"}</span>
+        ),
+    },
+    {
+        accessorKey: "createdAt",
+        header: "Joined",
+        cell: ({ row }) => (
+            <span className="text-sm">
+                {new Date(row.original.createdAt).toLocaleDateString()}
+            </span>
+        ),
+    },
+    {
+        id: "actions",
+        header: "Actions",
+        cell: ({ row }) => (
+            <div className="flex items-center gap-2">
+                <UserDetailsDialog user={row.original} />
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="sm">
+                            <IconChevronDown className="h-4 w-4" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        <DropdownMenuItem>
+                            <IconEdit className="h-4 w-4 mr-2" />
+                            Edit User
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>
+                            <IconFileText className="h-4 w-4 mr-2" />
+                            View Documents
+                        </DropdownMenuItem>
+                        {row.original.profileStatus === "PENDING_APPROVAL" && (
+                            <DropdownMenuItem
+                                onClick={async () => {
+                                    await fetch("/api/admin/approve-user", {
+                                        method: "POST",
+                                        body: JSON.stringify({
+                                            id: row.original.id,
+                                            action: "APPROVED"
+                                        }),
+                                        headers: { "Content-Type": "application/json" },
+                                    })
+                                    // Refresh the table data
+                                    window.location.reload()
+                                }}
+                            >
+                                Approve User
+                            </DropdownMenuItem>
+                        )}
+                        <Separator />
+                        <DropdownMenuItem className="text-red-600">
+                            <IconTrash className="h-4 w-4 mr-2" />
+                            Delete User
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            </div>
+        ),
     },
 ]
 
-function DraggableRow({ row }: { row: Row<z.infer<typeof schema>> }) {
-
+function DraggableRow({ row }: { row: Row<UserType> }) {
     return (
-        <TableRow
-            data-state={row.getIsSelected() && "selected"}
-        >
+        <TableRow data-state={row.getIsSelected() && "selected"}>
             {row.getVisibleCells().map((cell) => (
                 <TableCell key={cell.id}>
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -123,39 +514,60 @@ function DraggableRow({ row }: { row: Row<z.infer<typeof schema>> }) {
 }
 
 export default function UserTable() {
-    const [data, setData] = React.useState<z.infer<typeof schema>[]>([])
+    const [data, setData] = React.useState<UserType[]>([])
     const [total, setTotal] = React.useState(0)
     const [loading, setLoading] = React.useState(false)
     const [rowSelection, setRowSelection] = React.useState({})
-    const [columnVisibility, setColumnVisibility] =
-        React.useState<VisibilityState>({})
-    const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-        []
-    )
+    const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
+    const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
     const [sorting, setSorting] = React.useState<SortingState>([])
     const [pagination, setPagination] = React.useState({
         pageIndex: 0,
         pageSize: 10,
     })
+    const [roleFilter, setRoleFilter] = React.useState<string>("all")
+    const [statusFilter, setStatusFilter] = React.useState<string>("all")
 
     const fetchUsers = async (page: number, size: number) => {
         setLoading(true)
-        const res = await fetch(`/api/admin/users?page=${page + 1}&limit=${size}`)
-        const json = await res.json()
-        setData(json.users)
-        setTotal(json.total)
-        setLoading(false)
+        try {
+            const params = new URLSearchParams({
+                page: (page + 1).toString(),
+                limit: size.toString(),
+            })
+
+            if (roleFilter !== "all") {
+                params.append("role", roleFilter)
+            }
+
+            if (statusFilter !== "all") {
+                params.append("status", statusFilter)
+            }
+
+            const res = await fetch(`/api/admin/users?${params.toString()}`)
+            const json = await res.json()
+            setData(json.users)
+            setTotal(json.total)
+        } catch (error) {
+            console.error("Failed to fetch users:", error)
+        } finally {
+            setLoading(false)
+        }
     }
 
     React.useEffect(() => {
         fetchUsers(pagination.pageIndex, pagination.pageSize)
-    }, [pagination.pageIndex, pagination.pageSize])
+    }, [pagination.pageIndex, pagination.pageSize, roleFilter, statusFilter])
 
     const table = useReactTable({
         data,
         columns,
-        state: { pagination },
+        state: { pagination, rowSelection, columnVisibility, columnFilters, sorting },
         onPaginationChange: setPagination,
+        onRowSelectionChange: setRowSelection,
+        onColumnVisibilityChange: setColumnVisibility,
+        onColumnFiltersChange: setColumnFilters,
+        onSortingChange: setSorting,
         pageCount: Math.ceil(total / pagination.pageSize),
         manualPagination: true,
         getCoreRowModel: getCoreRowModel(),
@@ -163,109 +575,114 @@ export default function UserTable() {
     })
 
     return (
-        <div
-            defaultValue="outline"
-            className="w-full flex-col justify-start gap-6"
-        >
+        <div className="w-full flex-col justify-start gap-6 space-y-6">
+            {/* Filters and Actions */}
             <div className="flex items-center justify-between px-4 lg:px-6">
-                <Label htmlFor="view-selector" className="sr-only">
-                    View
-                </Label>
-                <Select defaultValue="outline">
-                    <SelectTrigger
-                        className="flex w-fit @4xl/main:hidden"
-                        size="sm"
-                        id="view-selector"
-                    >
-                        <SelectValue placeholder="Select a view" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="outline">Outline</SelectItem>
-                        <SelectItem value="past-performance">Past Performance</SelectItem>
-                        <SelectItem value="key-personnel">Key Personnel</SelectItem>
-                        <SelectItem value="focus-documents">Focus Documents</SelectItem>
-                    </SelectContent>
-                </Select>
+                <div className="flex items-center gap-4">
+                    <Select value={roleFilter} onValueChange={setRoleFilter}>
+                        <SelectTrigger className="w-48">
+                            <SelectValue placeholder="Filter by role" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">All Roles</SelectItem>
+                            <SelectItem value="SUPER_ADMIN">Super Admin</SelectItem>
+                            <SelectItem value="ADMIN">Admin</SelectItem>
+                            <SelectItem value="TEACHER">Teacher</SelectItem>
+                            <SelectItem value="STUDENT">Student</SelectItem>
+                            <SelectItem value="BASE_USER">Base User</SelectItem>
+                        </SelectContent>
+                    </Select>
+
+                    <Select value={statusFilter} onValueChange={setStatusFilter}>
+                        <SelectTrigger className="w-48">
+                            <SelectValue placeholder="Filter by status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">All Status</SelectItem>
+                            <SelectItem value="INCOMPLETE">Incomplete</SelectItem>
+                            <SelectItem value="PENDING_APPROVAL">Pending Approval</SelectItem>
+                            <SelectItem value="APPROVED">Approved</SelectItem>
+                            <SelectItem value="REJECTED">Rejected</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+
                 <div className="flex items-center gap-2">
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button variant="outline" size="sm">
-                                <IconLayoutColumns />
-                                <span className="hidden lg:inline">Customize Columns</span>
-                                <span className="lg:hidden">Columns</span>
-                                <IconChevronDown />
+                                <IconLayoutColumns className="h-4 w-4" />
+                                <span className="hidden lg:inline">Columns</span>
+                                <IconChevronDown className="h-4 w-4" />
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-56">
                             {table
                                 .getAllColumns()
-                                .filter(
-                                    (column) =>
-                                        typeof column.accessorFn !== "undefined" &&
-                                        column.getCanHide()
-                                )
-                                .map((column) => {
-                                    return (
-                                        <DropdownMenuCheckboxItem
-                                            key={column.id}
-                                            className="capitalize"
-                                            checked={column.getIsVisible()}
-                                            onCheckedChange={(value) =>
-                                                column.toggleVisibility(!!value)
-                                            }
-                                        >
-                                            {column.id}
-                                        </DropdownMenuCheckboxItem>
-                                    )
-                                })}
+                                .filter((column) => column.getCanHide())
+                                .map((column) => (
+                                    <DropdownMenuCheckboxItem
+                                        key={column.id}
+                                        className="capitalize"
+                                        checked={column.getIsVisible()}
+                                        onCheckedChange={(value) => column.toggleVisibility(!!value)}
+                                    >
+                                        {column.id}
+                                    </DropdownMenuCheckboxItem>
+                                ))}
                         </DropdownMenuContent>
                     </DropdownMenu>
-                    <Button variant="outline" size="sm">
-                        <IconPlus />
-                        <span className="hidden lg:inline">Add Section</span>
+
+                    <Button variant="default" size="sm">
+                        <IconPlus className="h-4 w-4" />
+                        <span className="hidden lg:inline">Add User</span>
                     </Button>
                 </div>
             </div>
-            <div
-                className="relative flex flex-col gap-4 overflow-auto px-4 lg:px-6 mt-4"
-            >
+
+            {/* Table */}
+            <div className="relative flex flex-col gap-4 overflow-auto px-4 lg:px-6">
                 <div className="overflow-hidden rounded-lg border">
-                        <Table>
-                            <TableHeader className="bg-muted sticky top-0 z-10">
-                                {table.getHeaderGroups().map((headerGroup) => (
-                                    <TableRow key={headerGroup.id}>
-                                        {headerGroup.headers.map((header) => {
-                                            return (
-                                                <TableHead key={header.id} colSpan={header.colSpan}>
-                                                    {header.isPlaceholder
-                                                        ? null
-                                                        : flexRender(
-                                                            header.column.columnDef.header,
-                                                            header.getContext()
-                                                        )}
-                                                </TableHead>
-                                            )
-                                        })}
-                                    </TableRow>
-                                ))}
-                            </TableHeader>
-                            <TableBody className="**:data-[slot=table-cell]:first:w-8">
-                                {table.getRowModel().rows?.length ? (table.getRowModel().rows.map((row) => (
-                                            <DraggableRow key={row.id} row={row} />
-                                        ))
-                                ) : (
-                                    <TableRow>
-                                        <TableCell
-                                            colSpan={columns.length}
-                                            className="h-24 text-center"
-                                        >
-                                            No results.
-                                        </TableCell>
-                                    </TableRow>
-                                )}
-                            </TableBody>
-                        </Table>
+                    <Table>
+                        <TableHeader className="bg-muted sticky top-0 z-10">
+                            {table.getHeaderGroups().map((headerGroup) => (
+                                <TableRow key={headerGroup.id}>
+                                    {headerGroup.headers.map((header) => (
+                                        <TableHead key={header.id} colSpan={header.colSpan}>
+                                            {header.isPlaceholder
+                                                ? null
+                                                : flexRender(
+                                                    header.column.columnDef.header,
+                                                    header.getContext()
+                                                )}
+                                        </TableHead>
+                                    ))}
+                                </TableRow>
+                            ))}
+                        </TableHeader>
+                        <TableBody>
+                            {loading ? (
+                                <TableRow>
+                                    <TableCell colSpan={columns.length} className="h-24 text-center">
+                                        Loading users...
+                                    </TableCell>
+                                </TableRow>
+                            ) : table.getRowModel().rows?.length ? (
+                                table.getRowModel().rows.map((row) => (
+                                    <DraggableRow key={row.id} row={row} />
+                                ))
+                            ) : (
+                                <TableRow>
+                                    <TableCell colSpan={columns.length} className="h-24 text-center">
+                                        No users found.
+                                    </TableCell>
+                                </TableRow>
+                            )}
+                        </TableBody>
+                    </Table>
                 </div>
+
+                {/* Pagination */}
                 <div className="flex items-center justify-between px-4">
                     <div className="text-muted-foreground hidden flex-1 text-sm lg:flex">
                         {table.getFilteredSelectedRowModel().rows.length} of{" "}
@@ -278,14 +695,10 @@ export default function UserTable() {
                             </Label>
                             <Select
                                 value={`${table.getState().pagination.pageSize}`}
-                                onValueChange={(value) => {
-                                    table.setPageSize(Number(value))
-                                }}
+                                onValueChange={(value) => table.setPageSize(Number(value))}
                             >
                                 <SelectTrigger size="sm" className="w-20" id="rows-per-page">
-                                    <SelectValue
-                                        placeholder={table.getState().pagination.pageSize}
-                                    />
+                                    <SelectValue placeholder={table.getState().pagination.pageSize} />
                                 </SelectTrigger>
                                 <SelectContent side="top">
                                     {[10, 20, 30, 40, 50].map((pageSize) => (
@@ -308,7 +721,7 @@ export default function UserTable() {
                                 disabled={!table.getCanPreviousPage()}
                             >
                                 <span className="sr-only">Go to first page</span>
-                                <IconChevronsLeft />
+                                <IconChevronsLeft className="h-4 w-4" />
                             </Button>
                             <Button
                                 variant="outline"
@@ -318,7 +731,7 @@ export default function UserTable() {
                                 disabled={!table.getCanPreviousPage()}
                             >
                                 <span className="sr-only">Go to previous page</span>
-                                <IconChevronLeft />
+                                <IconChevronLeft className="h-4 w-4" />
                             </Button>
                             <Button
                                 variant="outline"
@@ -328,7 +741,7 @@ export default function UserTable() {
                                 disabled={!table.getCanNextPage()}
                             >
                                 <span className="sr-only">Go to next page</span>
-                                <IconChevronRight />
+                                <IconChevronRight className="h-4 w-4" />
                             </Button>
                             <Button
                                 variant="outline"
@@ -338,7 +751,7 @@ export default function UserTable() {
                                 disabled={!table.getCanNextPage()}
                             >
                                 <span className="sr-only">Go to last page</span>
-                                <IconChevronsRight />
+                                <IconChevronsRight className="h-4 w-4" />
                             </Button>
                         </div>
                     </div>

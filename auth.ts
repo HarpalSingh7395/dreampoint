@@ -45,7 +45,6 @@ export const { handlers, auth, signIn, signOut, unstable_update } = NextAuth({
         token.role = user.role
         token.profileStatus = user.profileStatus
       }
-      console.log({trigger, session})
       if(trigger == "update" && session) {
         if(session?.role) token.role = session?.role
         if(session?.profileStatus) token.profileStatus = session?.profileStatus
