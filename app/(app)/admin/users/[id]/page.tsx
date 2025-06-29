@@ -9,5 +9,6 @@ export default async function UserDetailsPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params;
-  <UserView id={id} />
+  if(!id) return null;
+  return <UserView id={id} />
 }
