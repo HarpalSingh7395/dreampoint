@@ -57,12 +57,7 @@ export default function UserDetailsPage({
       .finally(() => {
         setLoading(false)
       })
-    // setTimeout(() => {
-    //   setUser(mockUser)
-    //   setLoading(false)
-    // }, 1000)
   }, [id])
-
 
   useEffect(() => {
     if (!user) return;
@@ -71,7 +66,7 @@ export default function UserDetailsPage({
 
       for (const doc of user.documents) {
         urls[doc.fileId] = {
-          preview: storage.getFilePreview(doc.path, doc.fileId),
+          preview: storage.getFileView(doc.path, doc.fileId),
           download: storage.getFileDownload(doc.path, doc.fileId)
         }
       }
@@ -99,11 +94,11 @@ export default function UserDetailsPage({
 
   const getStatusIcon = (status: ProfileStatus) => {
     switch (status) {
-      case 'APPROVED': return <CheckCircle className="size-4" />
-      case 'PENDING_APPROVAL': return <AlertCircle className="size-4" />
-      case 'REJECTED': return <XCircle className="size-4" />
-      case 'INCOMPLETE': return <Clock className="size-4" />
-      default: return <Clock className="size-4" />
+      case 'APPROVED': return <CheckCircle className="w-4 h-4" />
+      case 'PENDING_APPROVAL': return <AlertCircle className="w-4 h-4" />
+      case 'REJECTED': return <XCircle className="w-4 h-4" />
+      case 'INCOMPLETE': return <Clock className="w-4 h-4" />
+      default: return <Clock className="w-4 h-4" />
     }
   }
 
@@ -148,19 +143,19 @@ export default function UserDetailsPage({
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="size-8 animate-spin" />
+      <div className="flex items-center justify-center min-h-screen px-4">
+        <Loader2 className="w-8 h-8 animate-spin" />
       </div>
     )
   }
 
   if (error || !user) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-screen px-4">
         <Card className="w-full max-w-md">
           <CardContent className="pt-6">
             <div className="text-center">
-              <XCircle className="size-12 text-red-500 mx-auto mb-4" />
+              <XCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
               <h3 className="text-lg font-semibold">Error Loading User</h3>
               <p className="text-muted-foreground">{error || "User not found"}</p>
             </div>
@@ -171,64 +166,64 @@ export default function UserDetailsPage({
   }
 
   return (
-    <div className="container mx-auto p-6 max-w-6xl">
+    <div className="container mx-auto p-4 sm:p-6 max-w-6xl">
       {/* Header */}
-      <div className="mb-8">
-        <div className="flex items-start gap-6">
-          <Avatar className="size-24">
+      <div className="mb-6 md:mb-8">
+        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6">
+          <Avatar className="w-20 h-20 sm:w-24 sm:h-24 mx-auto sm:mx-0">
             <AvatarImage src="/placeholder-avatar.jpg" alt={user.name || 'User'} />
-            <AvatarFallback className="text-2xl">
+            <AvatarFallback className="text-xl sm:text-2xl">
               {user.name ? user.name.split(' ').map(n => n[0]).join('') : 'U'}
             </AvatarFallback>
           </Avatar>
-          <div className="flex-1">
-            <div className="flex items-center gap-3 mb-2">
-              <h1 className="text-3xl font-bold">{user.name || 'Unnamed User'}</h1>
+          <div className="flex-1 text-center sm:text-left">
+            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-2 sm:gap-3 mb-2">
+              <h1 className="text-2xl sm:text-3xl font-bold break-words">{user.name || 'Unnamed User'}</h1>
               <Badge className={getRoleColor(user.role)}>
                 {user.role.replace('_', ' ')}
               </Badge>
             </div>
-            <div className="flex items-center gap-2 mb-3">
+            <div className="flex items-center justify-center sm:justify-start gap-2 mb-3">
               {getStatusIcon(user.profileStatus)}
               <span className={`px-2 py-1 rounded-full text-sm font-medium ${getStatusColor(user.profileStatus)}`}>
                 {user.profileStatus.replace('_', ' ')}
               </span>
             </div>
-            <div className="flex items-center gap-4 text-sm text-muted-foreground">
+            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-2 sm:gap-4 text-sm text-muted-foreground">
               <div className="flex items-center gap-1">
-                <Mail className="size-4" />
-                {user.email}
+                <Mail className="w-4 h-4" />
+                <span className="break-all">{user.email}</span>
               </div>
               {user.phoneNumber && (
                 <div className="flex items-center gap-1">
-                  <Phone className="size-4" />
+                  <Phone className="w-4 h-4" />
                   {user.phoneNumber}
                 </div>
               )}
               <div className="flex items-center gap-1">
-                <Calendar className="size-4" />
-                Joined {formatDate(user.createdAt?.toString())}
+                <Calendar className="w-4 h-4" />
+                <span className="whitespace-nowrap">Joined {formatDate(user.createdAt?.toString())}</span>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <Tabs defaultValue="personal" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="personal">Personal Info</TabsTrigger>
-          <TabsTrigger value="education">Education</TabsTrigger>
-          <TabsTrigger value="professional">Professional</TabsTrigger>
-          <TabsTrigger value="documents">Documents</TabsTrigger>
+      <Tabs defaultValue="personal" className="space-y-4 sm:space-y-6">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 h-auto">
+          <TabsTrigger value="personal" className="text-xs sm:text-sm px-2 py-2">Personal Info</TabsTrigger>
+          <TabsTrigger value="education" className="text-xs sm:text-sm px-2 py-2">Education</TabsTrigger>
+          <TabsTrigger value="professional" className="text-xs sm:text-sm px-2 py-2">Professional</TabsTrigger>
+          <TabsTrigger value="documents" className="text-xs sm:text-sm px-2 py-2">Documents</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="personal" className="space-y-6">
-          <div className="grid gap-6 md:grid-cols-2">
+        <TabsContent value="personal" className="space-y-4 sm:space-y-6">
+          <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
             {/* Personal Information */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <UserIcon className="size-5" />
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <UserIcon className="w-5 h-5" />
                   Personal Details
                 </CardTitle>
               </CardHeader>
@@ -236,11 +231,11 @@ export default function UserDetailsPage({
                 <div className="grid gap-3">
                   <div>
                     <label className="text-sm font-medium text-muted-foreground">Full Name</label>
-                    <p className="font-medium">{user.name || 'Not provided'}</p>
+                    <p className="font-medium break-words">{user.name || 'Not provided'}</p>
                   </div>
                   <div>
                     <label className="text-sm font-medium text-muted-foreground">Email</label>
-                    <p className="font-medium">{user.email || 'Not provided'}</p>
+                    <p className="font-medium break-all">{user.email || 'Not provided'}</p>
                   </div>
                   <div>
                     <label className="text-sm font-medium text-muted-foreground">Phone</label>
@@ -257,8 +252,8 @@ export default function UserDetailsPage({
             {/* Address Information */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <MapPin className="size-5" />
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <MapPin className="w-5 h-5" />
                   Address
                 </CardTitle>
               </CardHeader>
@@ -266,9 +261,9 @@ export default function UserDetailsPage({
                 <div className="grid gap-3">
                   <div>
                     <label className="text-sm font-medium text-muted-foreground">Address</label>
-                    <p className="font-medium">{user.address || 'Not provided'}</p>
+                    <p className="font-medium break-words">{user.address || 'Not provided'}</p>
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="text-sm font-medium text-muted-foreground">City</label>
                       <p className="font-medium">{user.city || 'Not provided'}</p>
@@ -288,13 +283,13 @@ export default function UserDetailsPage({
           </div>
         </TabsContent>
 
-        <TabsContent value="education" className="space-y-6">
-          <div className="grid gap-6 md:grid-cols-2">
+        <TabsContent value="education" className="space-y-4 sm:space-y-6">
+          <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
             {/* Basic Education */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <BookOpen className="size-5" />
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <BookOpen className="w-5 h-5" />
                   Educational Background
                 </CardTitle>
               </CardHeader>
@@ -302,11 +297,11 @@ export default function UserDetailsPage({
                 <div className="grid gap-3">
                   <div>
                     <label className="text-sm font-medium text-muted-foreground">Qualification</label>
-                    <p className="font-medium">{user.qualification || 'Not provided'}</p>
+                    <p className="font-medium break-words">{user.qualification || 'Not provided'}</p>
                   </div>
                   <div>
                     <label className="text-sm font-medium text-muted-foreground">Institution</label>
-                    <p className="font-medium">{user.institution || 'Not provided'}</p>
+                    <p className="font-medium break-words">{user.institution || 'Not provided'}</p>
                   </div>
                   {user.currentGrade && (
                     <div>
@@ -321,15 +316,15 @@ export default function UserDetailsPage({
             {/* Subjects */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Award className="size-5" />
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <Award className="w-5 h-5" />
                   Subjects
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2">
                   {user.subjects && parseSubjects(user.subjects).map((subject, index) => (
-                    <Badge key={index} variant="secondary">
+                    <Badge key={index} variant="secondary" className="text-xs">
                       {subject}
                     </Badge>
                   ))}
@@ -345,17 +340,17 @@ export default function UserDetailsPage({
           {user.extraQualifications && Array.isArray(user.extraQualifications) && user.extraQualifications.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <GraduationCap className="size-5" />
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <GraduationCap className="w-5 h-5" />
                   Additional Qualifications
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid gap-4 md:grid-cols-2">
+                <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-2">
                   {user.extraQualifications.map((qualification: any, index: number) => (
                     <div key={index} className="p-4 border rounded-lg">
-                      <h4 className="font-medium">{qualification.title}</h4>
-                      <p className="text-sm text-muted-foreground">{qualification.institution}</p>
+                      <h4 className="font-medium break-words">{qualification.title}</h4>
+                      <p className="text-sm text-muted-foreground break-words">{qualification.institution}</p>
                       <p className="text-sm text-muted-foreground">Year: {qualification.year}</p>
                     </div>
                   ))}
@@ -365,14 +360,14 @@ export default function UserDetailsPage({
           )}
         </TabsContent>
 
-        <TabsContent value="professional" className="space-y-6">
+        <TabsContent value="professional" className="space-y-4 sm:space-y-6">
           {user.role === 'TEACHER' && (
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
               {/* Teaching Info */}
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Users className="size-5" />
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <Users className="w-5 h-5" />
                     Teaching Information
                   </CardTitle>
                 </CardHeader>
@@ -391,7 +386,7 @@ export default function UserDetailsPage({
                     {user.specialization && (
                       <div>
                         <label className="text-sm font-medium text-muted-foreground">Specialization</label>
-                        <p className="font-medium">{user.specialization}</p>
+                        <p className="font-medium break-words">{user.specialization}</p>
                       </div>
                     )}
                   </div>
@@ -401,8 +396,8 @@ export default function UserDetailsPage({
               {/* Teaching Grades & Availability */}
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Clock className="size-5" />
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <Clock className="w-5 h-5" />
                     Availability & Grades
                   </CardTitle>
                 </CardHeader>
@@ -411,7 +406,7 @@ export default function UserDetailsPage({
                     <label className="text-sm font-medium text-muted-foreground mb-2 block">Teaching Grades</label>
                     <div className="flex flex-wrap gap-2">
                       {user.teachingGrades && parseGrades(user.teachingGrades).map((grade, index) => (
-                        <Badge key={index} variant="outline">
+                        <Badge key={index} variant="outline" className="text-xs">
                           {grade}
                         </Badge>
                       ))}
@@ -424,7 +419,7 @@ export default function UserDetailsPage({
                     <label className="text-sm font-medium text-muted-foreground mb-2 block">Availability</label>
                     <div className="flex flex-wrap gap-2">
                       {user.availability && parseAvailability(user.availability).map((day, index) => (
-                        <Badge key={index} variant="outline">
+                        <Badge key={index} variant="outline" className="text-xs">
                           {day}
                         </Badge>
                       ))}
@@ -438,12 +433,12 @@ export default function UserDetailsPage({
 
               {/* Bio */}
               {user.bio && (
-                <Card className="md:col-span-2">
+                <Card className="lg:col-span-2">
                   <CardHeader>
-                    <CardTitle>Bio</CardTitle>
+                    <CardTitle className="text-lg">Bio</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-sm leading-relaxed">{user.bio}</p>
+                    <p className="text-sm leading-relaxed break-words">{user.bio}</p>
                   </CardContent>
                 </Card>
               )}
@@ -453,13 +448,13 @@ export default function UserDetailsPage({
           {user.role === 'STUDENT' && (
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <BookOpen className="size-5" />
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <BookOpen className="w-5 h-5" />
                   Student Information
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid gap-4 md:grid-cols-2">
+                <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-2">
                   <div>
                     <label className="text-sm font-medium text-muted-foreground">Current Grade</label>
                     <p className="font-medium">{user.currentGrade || 'Not provided'}</p>
@@ -468,7 +463,7 @@ export default function UserDetailsPage({
                     <label className="text-sm font-medium text-muted-foreground">Looking for help in</label>
                     <div className="flex flex-wrap gap-2 mt-1">
                       {user.subjects && parseSubjects(user.subjects).map((subject, index) => (
-                        <Badge key={index} variant="secondary">
+                        <Badge key={index} variant="secondary" className="text-xs">
                           {subject}
                         </Badge>
                       ))}
@@ -480,11 +475,11 @@ export default function UserDetailsPage({
           )}
         </TabsContent>
 
-        <TabsContent value="documents" className="space-y-6">
+        <TabsContent value="documents" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FileText className="size-5" />
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <FileText className="w-5 h-5" />
                 Uploaded Documents
               </CardTitle>
               <CardDescription>
@@ -495,30 +490,34 @@ export default function UserDetailsPage({
               <div className="grid gap-4">
                 {user.documents.length > 0 ? (
                   user.documents.map((document: any) => (
-                    <div key={document.id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div className="flex items-center gap-3">
-                        <FileText className="size-8 text-muted-foreground" />
-                        <div>
-                          <h4 className="font-medium">{document.name}</h4>
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <div key={document.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 border rounded-lg gap-4">
+                      <div className="flex items-start gap-3 flex-1 min-w-0">
+                        <FileText className="w-8 h-8 text-muted-foreground flex-shrink-0 mt-1" />
+                        <div className="min-w-0 flex-1">
+                          <h4 className="font-medium break-words">{document.name}</h4>
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-sm text-muted-foreground">
                             <span>{document.type.replace('_', ' ')}</span>
-                            <span>•</span>
-                            {document.size && <span>{formatBytes(document.size)}</span>}
-                            <span>•</span>
-                            <span>{formatDate(document.createdAt?.toString())}</span>
+                            {document.size && (
+                              <>
+                                <span className="hidden sm:inline">•</span>
+                                <span>{formatBytes(document.size)}</span>
+                              </>
+                            )}
+                            <span className="hidden sm:inline">•</span>
+                            <span className="whitespace-nowrap">{formatDate(document.createdAt?.toString())}</span>
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <a href={fileUrls[document.fileId]?.preview} target="_blank" rel="noopener noreferrer">
-                          <Button disabled={!!!fileUrls[document.fileId]?.preview} variant="outline" size="sm">
-                            <Eye className="size-4 mr-2" />
+                      <div className="flex items-center gap-2 w-full sm:w-auto">
+                        <a href={fileUrls[document.fileId]?.preview} target="_blank" rel="noopener noreferrer" className="flex-1 sm:flex-none">
+                          <Button disabled={!!!fileUrls[document.fileId]?.preview} variant="outline" size="sm" className="w-full sm:w-auto">
+                            <Eye className="w-4 h-4 mr-2" />
                             View
                           </Button>
                         </a>
-                        <a href={fileUrls[document.fileId]?.download} target="_blank" rel="noopener noreferrer">
-                          <Button disabled={!!!fileUrls[document.fileId]?.download} variant="outline" size="sm">
-                            <Download className="size-4 mr-2" />
+                        <a href={fileUrls[document.fileId]?.download} target="_blank" rel="noopener noreferrer" className="flex-1 sm:flex-none">
+                          <Button disabled={!!!fileUrls[document.fileId]?.download} variant="outline" size="sm" className="w-full sm:w-auto">
+                            <Download className="w-4 h-4 mr-2" />
                             Download
                           </Button>
                         </a>
@@ -527,7 +526,7 @@ export default function UserDetailsPage({
                   ))
                 ) : (
                   <div className="text-center py-8 text-muted-foreground">
-                    <FileText className="size-12 mx-auto mb-4 opacity-50" />
+                    <FileText className="w-12 h-12 mx-auto mb-4 opacity-50" />
                     <p>No documents uploaded</p>
                   </div>
                 )}
@@ -536,7 +535,11 @@ export default function UserDetailsPage({
           </Card>
         </TabsContent>
       </Tabs>
-      {user && <div className='w-full flex justify-end items-center'><ApproveButton user={user} onApprove={onApprove} /></div>}
+      {user && (
+        <div className='w-full flex justify-center sm:justify-end items-center mt-6'>
+          <ApproveButton user={user} onApprove={onApprove} />
+        </div>
+      )}
     </div>
   )
 }
