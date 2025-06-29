@@ -1,7 +1,6 @@
 import React from 'react'
 import FloatingElement from './FloatingElement'
 import TeacherCard from './TeacherCard'
-import AnimatedButton from './AnimatedButton'
 
 export default function TeachersSection() {
     return (

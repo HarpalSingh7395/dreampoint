@@ -3,11 +3,12 @@ import { NextRequest, NextResponse } from "next/server"
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const course = await prisma.course.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         teacher: {
           select: {
@@ -67,14 +68,15 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const body = await request.json()
     const { title, description, startDate, endDate, schedule } = body
 
     const course = await prisma.course.update({
-      where: { id: params.id },
+      where: { id: id },
       data: {
         title,
         description,
@@ -83,7 +85,11 @@ export async function PUT(
         ...(schedule && {
           schedule: {
             deleteMany: {},
-            create: schedule.map((s: any) => ({
+            create: schedule.map((s: {
+              dayOfWeek: string
+              startTime: string
+              endTime: string
+            }) => ({
               dayOfWeek: s.dayOfWeek,
               startTime: s.startTime,
               endTime: s.endTime
@@ -117,11 +123,12 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   try {
     await prisma.course.delete({
-      where: { id: params.id }
+      where: { id: id }
     })
 
     return NextResponse.json({

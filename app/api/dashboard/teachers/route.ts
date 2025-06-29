@@ -1,6 +1,6 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient, ProfileStatus } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
     const where = {
       role: 'TEACHER' as const,
       deletedAt: null,
-      ...(status && { profileStatus: status as any }),
+      ...(status && { profileStatus: status as ProfileStatus }),
     }
 
     const [teachers, total] = await Promise.all([

@@ -1,5 +1,5 @@
 "use client"
-import { Mail, CheckCircle, ArrowLeft, RefreshCw } from "lucide-react";
+import { Mail, CheckCircle, ArrowLeft } from "lucide-react";
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,18 +7,12 @@ import { useState, useEffect } from 'react';
 import Link from "next/link";
 
 export default function SignInConfirmation() {
-    const [isAnimating, setIsAnimating] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
 
     useEffect(() => {
         const timer = setTimeout(() => setShowSuccess(true), 300);
         return () => clearTimeout(timer);
     }, []);
-
-    const handleResendLink = () => {
-        setIsAnimating(true);
-        setTimeout(() => setIsAnimating(false), 1000);
-    };
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center p-4">

@@ -11,19 +11,10 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
-import { Button } from "@/components/ui/button"
-import { LogOut } from 'lucide-react'
-import { signOut } from 'next-auth/react'
 import UserAvatarDropdown from './UserProfileDropdown'
 
 export default function BreadcrumbBar() {
   const pathname = usePathname()
-  
-  const handleSignOut = () => {
-    signOut({
-      redirectTo: "/login"
-    });
-  };
 
   // Function to format path segments into readable labels
   const formatSegment = (segment: string) => {

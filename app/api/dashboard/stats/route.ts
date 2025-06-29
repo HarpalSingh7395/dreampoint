@@ -1,14 +1,13 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     // Get current date for comparison
     const now = new Date()
     const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate())
-    const lastYear = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate())
 
     // Active Teachers (Approved and not deleted)
     const activeTeachers = await prisma.user.count({

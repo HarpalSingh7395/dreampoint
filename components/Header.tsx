@@ -1,12 +1,10 @@
 'use client'
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
-import Image from 'next/image';
 import { Button } from './ui/button';
-import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from './ui/sheet';
-import { Badge } from './ui/badge';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from './ui/sheet';
 import { signOut, useSession } from "next-auth/react";
-import { Menu, X, LogOut, User, GraduationCap } from 'lucide-react';
+import { Menu, LogOut, User, GraduationCap } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Logo from './Logo';
 import LogoIcon from './icons/LogoIcon';

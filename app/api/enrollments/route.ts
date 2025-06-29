@@ -1,4 +1,5 @@
 import { prisma } from "@/prisma"
+import { Prisma } from "@prisma/client"
 import { NextRequest, NextResponse } from "next/server"
 
 export async function POST(request: NextRequest) {
@@ -118,7 +119,7 @@ export async function GET(request: NextRequest) {
     const studentId = searchParams.get('studentId')
     const courseId = searchParams.get('courseId')
 
-    const where: any = {}
+    const where: Prisma.EnrollmentWhereInput = {}
     if (studentId) where.studentId = studentId
     if (courseId) where.courseId = courseId
 

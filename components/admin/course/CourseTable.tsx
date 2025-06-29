@@ -6,7 +6,6 @@ import {
   ColumnFiltersState,
   flexRender,
   getCoreRowModel,
-  getFilteredRowModel,
   getPaginationRowModel,
   SortingState,
   useReactTable,
@@ -244,7 +243,7 @@ export const columns: ColumnDef<CourseWithStats>[] = [
           })
           toast.success("Course deleted")
           window.location.reload()
-        } catch (err) {
+        } catch {
           toast.error("Failed to delete course")
         }
       }
@@ -299,7 +298,7 @@ export default function CourseTable() {
   const [globalFilter, setGlobalFilter] = React.useState("")
   const [typeFilter, setTypeFilter] = React.useState<string>("all")
   const [statusFilter, setStatusFilter] = React.useState<string>("all")
-  const [teacherFilter, setTeacherFilter] = React.useState<string>("all")
+  const [teacherFilter] = React.useState<string>("all")
 
   const fetchCourses = async (page: number, size: number) => {
     setLoading(true)

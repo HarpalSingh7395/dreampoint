@@ -7,18 +7,10 @@ import {
     IconChevronsLeft,
     IconChevronsRight,
     IconLayoutColumns,
-    IconPlus,
-    IconEye,
     IconEdit,
     IconTrash,
     IconFileText,
-    IconMail,
-    IconPhone,
     IconMapPin,
-    IconUser,
-    IconSchool,
-    IconClock,
-    IconCurrencyRupee,
     IconRefresh,
 } from "@tabler/icons-react"
 import {
@@ -41,8 +33,6 @@ import {
     DropdownMenuContent,
     DropdownMenuTrigger,
     DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
 import { Label } from "@/components/ui/label"
 import {
@@ -67,23 +57,6 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog"
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
-import {
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle,
-} from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"
 import React from "react"
@@ -358,7 +331,7 @@ const columns: ColumnDef<UserType>[] = [
     {
         id: "actions",
         header: "Actions",
-        cell: ({ row, table }) => (
+        cell: ({ row }) => (
             <div className="flex items-center gap-2">
                 <DropdownMenu>
                     <DropdownMenuTrigger>

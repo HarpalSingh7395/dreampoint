@@ -1,29 +1,12 @@
-import NextAuth, { DefaultSession } from "next-auth"
+import NextAuth from "next-auth"
 import Mailgun from "next-auth/providers/mailgun"
 import Google from "next-auth/providers/google"
 import { PrismaAdapter } from "@auth/prisma-adapter"
 import { prisma } from "@/prisma"
 import { NextResponse } from "next/server"
 import type { NextAuthConfig } from "next-auth"
+import { ProfileStatus, Role } from "@prisma/client"
 
-declare module "next-auth" {
-  interface Session {
-    user: {
-      role: "SUPER_ADMIN" | "ADMIN" | "TEACHER" | "STUDENT" | "BASE_USER"
-      profileStatus: "INCOMPLETE" | "PENDING_APPROVAL" | "APPROVED" | "REJECTED"
-    } & DefaultSession["user"]
-  }
-
-  interface User {
-    role: "SUPER_ADMIN" | "ADMIN" | "TEACHER" | "STUDENT" | "BASE_USER"
-    profileStatus: "INCOMPLETE" | "PENDING_APPROVAL" | "APPROVED" | "REJECTED"
-  }
-
-  interface JWT {
-    role?: "SUPER_ADMIN" | "ADMIN" | "TEACHER" | "STUDENT" | "BASE_USER"
-    profileStatus?: "INCOMPLETE" | "PENDING_APPROVAL" | "APPROVED" | "REJECTED"
-  }
-}
 
 export const { handlers, auth, signIn, signOut, unstable_update } = NextAuth({
   adapter: PrismaAdapter(prisma),
@@ -54,8 +37,8 @@ export const { handlers, auth, signIn, signOut, unstable_update } = NextAuth({
 
     async session({ session, token }) {
       if (session.user && token.role) {
-        session.user.role = token.role as any
-        session.user.profileStatus = token.profileStatus as any
+        session.user.role = token.role as Role
+        session.user.profileStatus = token.profileStatus as ProfileStatus
       }
       return session
     },

@@ -1,4 +1,3 @@
-import LogoutButton from '@/components/auth/LogoutButton'
 import { RegistrationForm } from '@/components/RegistrationForm'
 import React from 'react'
 

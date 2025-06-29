@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Progress } from '@/components/ui/progress'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Calendar, Clock, BookOpen, User, Star, CreditCard, FileText, Bell } from 'lucide-react'
+import { Calendar, Clock, BookOpen, User, CreditCard, Bell } from 'lucide-react'
 
 // Mock data based on schema
 const studentData = {

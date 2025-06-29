@@ -1,5 +1,5 @@
 
-export default function ServiceCard({ title, description, icon, gradient, delay = 0, bgColor = "bg-blue-50" }: {
+export default function ServiceCard({ title, description, icon, gradient, delay = 0 }: {
   title: string,
   description: string,
   icon: React.ReactNode,

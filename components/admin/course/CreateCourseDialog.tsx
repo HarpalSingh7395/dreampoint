@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client"
 
 import {
@@ -20,7 +21,7 @@ import { useEffect, useState } from "react"
 import { Checkbox } from "@/components/ui/checkbox"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Badge } from "@/components/ui/badge"
-import { Calendar as CalendarIcon, Clock, Users, User, BookOpen, X } from "lucide-react"
+import { Calendar as CalendarIcon, Clock, Users, User, BookOpen, X, Search, Copy, Zap } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 
 type Weekday = "MONDAY" | "TUESDAY" | "WEDNESDAY" | "THURSDAY" | "FRIDAY" | "SATURDAY" | "SUNDAY"
@@ -35,13 +36,42 @@ const weekdays: { key: Weekday; label: string; short: string }[] = [
     { key: "SUNDAY", label: "Sunday", short: "Sun" },
 ]
 
+const subjectButtons = [
+    "Mathematics", "Physics", "Chemistry", "Biology", "English", "History",
+    "Geography", "Computer Science", "Economics", "Literature", "Art", "Music",
+    "French", "Spanish", "German", "Psychology", "Philosophy", "Statistics"
+]
+
+const timePresets = [
+    { label: "Morning (9:00 - 12:00)", start: "09:00", end: "12:00" },
+    { label: "Afternoon (13:00 - 16:00)", start: "13:00", end: "16:00" },
+    { label: "Evening (17:00 - 20:00)", start: "17:00", end: "20:00" },
+    { label: "Short Session (1 hour)", start: "10:00", end: "11:00" },
+    { label: "Standard Session (2 hours)", start: "14:00", end: "16:00" },
+]
+
+interface Teacher {
+    id: string
+    name: string
+    email: string
+}
+
+interface Student {
+    id: string
+    name: string
+    email: string
+}
+
 export default function CreateCourseDialog({ onSuccess }: { onSuccess?: () => void }) {
     const [open, setOpen] = useState(false)
     const [loading, setLoading] = useState(false)
-    const [loadingData, setLoadingData] = useState(true)
+    const [loadingTeachers, setLoadingTeachers] = useState(false)
+    const [loadingStudents, setLoadingStudents] = useState(false)
 
-    const [teachers, setTeachers] = useState<{ id: string; name: string; email: string }[]>([])
-    const [students, setStudents] = useState<{ id: string; name: string; email: string }[]>([])
+    const [teachers, setTeachers] = useState<Teacher[]>([])
+    const [students, setStudents] = useState<Student[]>([])
+    const [teacherSearch, setTeacherSearch] = useState("")
+    const [studentSearch, setStudentSearch] = useState("")
 
     const [title, setTitle] = useState("")
     const [description, setDescription] = useState("")
@@ -51,6 +81,8 @@ export default function CreateCourseDialog({ onSuccess }: { onSuccess?: () => vo
 
     const [startDate, setStartDate] = useState<Date | undefined>()
     const [endDate, setEndDate] = useState<Date | undefined>()
+    const [fee, setFee] = useState("")
+    const [capacity, setCapacity] = useState("")
 
     const [schedule, setSchedule] = useState<Record<Weekday, { start: string; end: string } | null>>({
         MONDAY: null,
@@ -62,33 +94,71 @@ export default function CreateCourseDialog({ onSuccess }: { onSuccess?: () => vo
         SUNDAY: null,
     })
 
+    const [bulkTimeStart, setBulkTimeStart] = useState("")
+    const [bulkTimeEnd, setBulkTimeEnd] = useState("")
+    const [selectedDaysForBulk, setSelectedDaysForBulk] = useState<Weekday[]>([])
+
     const [errors, setErrors] = useState<Record<string, string>>({})
 
-    useEffect(() => {
-        const fetchData = async () => {
-            setLoadingData(true)
-            try {
-                const [teachersRes, studentsRes] = await Promise.all([
-                    fetch("/api/admin/teachers?limit=100&deleted=active"),
-                    fetch("/api/admin/students?limit=100&deleted=active")
-                ])
 
-                const teachersData = await teachersRes.json()
-                const studentsData = await studentsRes.json()
+    const fetchTeachers = async (search = "", page = 1, reset = false) => {
+        setLoadingTeachers(true)
+        try {
+            const response = await fetch(`/api/admin/teachers?limit=20&page=${page}&search=${encodeURIComponent(search)}&deleted=active`)
+            const data = await response.json()
 
-                setTeachers(teachersData.teachers || [])
-                setStudents(studentsData.students || [])
-            } catch (error) {
-                console.error("Failed to fetch data:", error)
-            } finally {
-                setLoadingData(false)
+            if (reset) {
+                setTeachers(data.teachers || [])
+            } else {
+                setTeachers(prev => [...prev, ...(data.teachers || [])])
             }
+        } catch (error) {
+            console.error("Failed to fetch teachers:", error)
+        } finally {
+            setLoadingTeachers(false)
         }
+    }
 
-        if (open) {
-            fetchData()
+    const fetchStudents = async (search = "", page = 1, reset = false) => {
+        setLoadingStudents(true)
+        try {
+            const response = await fetch(`/api/admin/students?limit=20&page=${page}&search=${encodeURIComponent(search)}&deleted=active`)
+            const data = await response.json()
+
+            if (reset) {
+                setStudents(data.students || [])
+            } else {
+                setStudents(prev => [...prev, ...(data.students || [])])
+            }
+        } catch (error) {
+            console.error("Failed to fetch students:", error)
+        } finally {
+            setLoadingStudents(false)
         }
-    }, [open])
+    }
+
+    useEffect(() => {
+        fetchTeachers()
+        fetchStudents()
+    }, [])
+
+    // useEffect(() => {
+    //     if (teacherSearch.trim() === "") {
+    //         setTeacherPage(1)
+    //         fetchTeachers("", 1, true)
+    //     } else {
+    //         debouncedTeacherSearch(teacherSearch)
+    //     }
+    // }, [])
+
+    // useEffect(() => {
+    //     if (studentSearch.trim() === "") {
+    //         setStudentPage(1)
+    //         fetchStudents("", 1, true)
+    //     } else {
+    //         debouncedStudentSearch(studentSearch)
+    //     }
+    // }, [])
 
     const resetForm = () => {
         setTitle("")
@@ -107,7 +177,62 @@ export default function CreateCourseDialog({ onSuccess }: { onSuccess?: () => vo
             SATURDAY: null,
             SUNDAY: null,
         })
+        setBulkTimeStart("")
+        setBulkTimeEnd("")
+        setSelectedDaysForBulk([])
+        setTeacherSearch("")
+        setStudentSearch("")
+        setFee("") // Add this line
+        setCapacity("") // Add this line
         setErrors({})
+    }
+
+    const addSubjectToDescription = (subject: string) => {
+        const currentDesc = description.trim()
+        if (currentDesc === "") {
+            setDescription(`${subject} course`)
+        } else if (!currentDesc.toLowerCase().includes(subject.toLowerCase())) {
+            setDescription(`${currentDesc}, ${subject}`)
+        }
+    }
+
+    const applyTimePreset = (preset: { start: string; end: string }) => {
+        setBulkTimeStart(preset.start)
+        setBulkTimeEnd(preset.end)
+    }
+
+    const applyBulkTime = () => {
+        if (bulkTimeStart && bulkTimeEnd && selectedDaysForBulk.length > 0) {
+            setSchedule(prev => {
+                const newSchedule = { ...prev }
+                selectedDaysForBulk.forEach(day => {
+                    newSchedule[day] = { start: bulkTimeStart, end: bulkTimeEnd }
+                })
+                return newSchedule
+            })
+            setSelectedDaysForBulk([])
+        }
+    }
+
+    const toggleDayForBulk = (day: Weekday) => {
+        setSelectedDaysForBulk(prev =>
+            prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day]
+        )
+    }
+
+    const copyScheduleToAll = (sourceDay: Weekday) => {
+        const sourceSchedule = schedule[sourceDay]
+        if (sourceSchedule) {
+            setSchedule(prev => {
+                const newSchedule = { ...prev }
+                weekdays.forEach(({ key }) => {
+                    if (key !== sourceDay) {
+                        newSchedule[key] = { ...sourceSchedule }
+                    }
+                })
+                return newSchedule
+            })
+        }
     }
 
     const toggleStudent = (id: string) => {
@@ -130,6 +255,7 @@ export default function CreateCourseDialog({ onSuccess }: { onSuccess?: () => vo
         }))
     }
 
+    // 3. Update the validateForm function to include fee and capacity validation:
     const validateForm = () => {
         const newErrors: Record<string, string> = {}
 
@@ -142,6 +268,34 @@ export default function CreateCourseDialog({ onSuccess }: { onSuccess?: () => vo
             newErrors.endDate = "End date must be after start date"
         }
 
+        // Add fee validation
+        if (!fee.trim()) {
+            newErrors.fee = "Fee is required"
+        } else {
+            const feeNum = parseFloat(fee)
+            if (isNaN(feeNum)) {
+                newErrors.fee = "Fee must be a valid number"
+            } else if (feeNum < 0) {
+                newErrors.fee = "Fee cannot be negative"
+            }
+        }
+
+        // Add capacity validation
+        if (type === "GROUP") {
+            if (!capacity.trim()) {
+                newErrors.capacity = "Capacity is required for group courses"
+            } else {
+                const capacityNum = parseInt(capacity)
+                if (isNaN(capacityNum)) {
+                    newErrors.capacity = "Capacity must be a valid number"
+                } else if (capacityNum <= 0) {
+                    newErrors.capacity = "Capacity must be greater than zero"
+                } else if (!Number.isInteger(parseFloat(capacity))) {
+                    newErrors.capacity = "Capacity must be a whole number"
+                }
+            }
+        }
+
         const hasSchedule = Object.values(schedule).some(day =>
             day && day.start && day.end
         )
@@ -149,7 +303,6 @@ export default function CreateCourseDialog({ onSuccess }: { onSuccess?: () => vo
             newErrors.schedule = "At least one day schedule is required"
         }
 
-        // Validate time format and logic for each scheduled day
         Object.entries(schedule).forEach(([day, times]) => {
             if (times && (times.start || times.end)) {
                 if (!times.start) newErrors[`${day}_start`] = "Start time required"
@@ -186,6 +339,8 @@ export default function CreateCourseDialog({ onSuccess }: { onSuccess?: () => vo
                     description: description.trim(),
                     type,
                     teacherId,
+                    fee: parseFloat(fee),
+                    capacity: type === "GROUP" ? parseInt(capacity) : null,
                     startDate,
                     endDate,
                     schedule: Object.entries(schedule)
@@ -203,7 +358,7 @@ export default function CreateCourseDialog({ onSuccess }: { onSuccess?: () => vo
                 const errorData = await courseRes.json()
                 setErrors({ submit: errorData.message || "Failed to create course" })
             }
-        } catch (error) {
+        } catch {
             setErrors({ submit: "Network error. Please try again." })
         } finally {
             setLoading(false)
@@ -217,6 +372,16 @@ export default function CreateCourseDialog({ onSuccess }: { onSuccess?: () => vo
     const activeScheduleDays = Object.entries(schedule)
         .filter(([_, times]) => times && times.start && times.end)
         .length
+
+    const filteredTeachers = teachers.filter(teacher =>
+        teacher.name.toLowerCase().includes(teacherSearch.toLowerCase()) ||
+        teacher.email.toLowerCase().includes(teacherSearch.toLowerCase())
+    )
+
+    const filteredStudents = students.filter(student =>
+        student.name.toLowerCase().includes(studentSearch.toLowerCase()) ||
+        student.email.toLowerCase().includes(studentSearch.toLowerCase())
+    )
 
     return (
         <Dialog open={open} onOpenChange={(newOpen) => {
@@ -251,7 +416,7 @@ export default function CreateCourseDialog({ onSuccess }: { onSuccess?: () => vo
                                                 id="title"
                                                 value={title}
                                                 onChange={e => setTitle(e.target.value)}
-                                                placeholder="Enter course title"
+                                                placeholder="e.g., Advanced Mathematics, Physics 101"
                                                 className={errors.title ? "border-red-500" : ""}
                                             />
                                             {errors.title && <p className="text-sm text-red-500">{errors.title}</p>}
@@ -259,7 +424,7 @@ export default function CreateCourseDialog({ onSuccess }: { onSuccess?: () => vo
 
                                         <div className="space-y-2">
                                             <Label htmlFor="type">Course Type *</Label>
-                                            <Select value={type} onValueChange={v => setType(v as any)}>
+                                            <Select value={type} onValueChange={v => setType(v as "PERSONAL" | "GROUP")}>
                                                 <SelectTrigger className={errors.type ? "border-red-500" : ""}>
                                                     <SelectValue placeholder="Select course type" />
                                                 </SelectTrigger>
@@ -283,17 +448,66 @@ export default function CreateCourseDialog({ onSuccess }: { onSuccess?: () => vo
 
                                     <div className="space-y-2">
                                         <Label htmlFor="description">Description *</Label>
-                                        <Textarea
-                                            id="description"
-                                            value={description}
-                                            onChange={e => setDescription(e.target.value)}
-                                            placeholder="Enter course description"
-                                            rows={3}
-                                            className={errors.description ? "border-red-500" : ""}
-                                        />
+                                        <div className="space-y-2">
+                                            <div className="flex flex-wrap gap-1">
+                                                {subjectButtons.map(subject => (
+                                                    <Button
+                                                        key={subject}
+                                                        size="sm"
+                                                        variant="outline"
+                                                        onClick={() => addSubjectToDescription(subject)}
+                                                        className="h-7 text-xs"
+                                                    >
+                                                        {subject}
+                                                    </Button>
+                                                ))}
+                                            </div>
+                                            <Textarea
+                                                id="description"
+                                                value={description}
+                                                onChange={e => setDescription(e.target.value)}
+                                                placeholder="Describe what this course covers, learning objectives, etc."
+                                                rows={3}
+                                                className={errors.description ? "border-red-500" : ""}
+                                            />
+                                        </div>
                                         {errors.description && <p className="text-sm text-red-500">{errors.description}</p>}
                                     </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <Label htmlFor="fee">Course Fee * (₹)</Label>
+                                            <Input
+                                                id="fee"
+                                                type="number"
+                                                min="0"
+                                                step="0.01"
+                                                value={fee}
+                                                onChange={e => setFee(e.target.value)}
+                                                placeholder="e.g., 5000, 1500.50"
+                                                className={errors.fee ? "border-red-500" : ""}
+                                            />
+                                            {errors.fee && <p className="text-sm text-red-500">{errors.fee}</p>}
+                                        </div>
+
+                                        {type === "GROUP" && (
+                                            <div className="space-y-2">
+                                                <Label htmlFor="capacity">Class Capacity *</Label>
+                                                <Input
+                                                    id="capacity"
+                                                    type="number"
+                                                    min="1"
+                                                    step="1"
+                                                    value={capacity}
+                                                    onChange={e => setCapacity(e.target.value)}
+                                                    placeholder="e.g., 10, 25"
+                                                    className={errors.capacity ? "border-red-500" : ""}
+                                                />
+                                                {errors.capacity && <p className="text-sm text-red-500">{errors.capacity}</p>}
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
+
                             </CardContent>
                         </Card>
 
@@ -307,21 +521,40 @@ export default function CreateCourseDialog({ onSuccess }: { onSuccess?: () => vo
 
                                     <div className="space-y-2">
                                         <Label htmlFor="teacher">Select Teacher *</Label>
-                                        <Select value={teacherId} onValueChange={setTeacherId} disabled={loadingData}>
-                                            <SelectTrigger className={errors.teacherId ? "border-red-500" : ""}>
-                                                <SelectValue placeholder={loadingData ? "Loading teachers..." : "Select a teacher"} />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {teachers.map(teacher => (
-                                                    <SelectItem key={teacher.id} value={teacher.id}>
-                                                        <div className="flex flex-col items-start">
-                                                            <span className="font-medium">{teacher.name}</span>
-                                                            <span className="text-sm text-muted-foreground">{teacher.email}</span>
-                                                        </div>
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
+                                        <div className="space-y-2">
+                                            <div className="relative">
+                                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                                <Input
+                                                    placeholder="Search teachers by name or email..."
+                                                    value={teacherSearch}
+                                                    onChange={e => setTeacherSearch(e.target.value)}
+                                                    className="pl-10"
+                                                />
+                                            </div>
+                                            <Select value={teacherId} onValueChange={setTeacherId}>
+                                                <SelectTrigger className={errors.teacherId ? "border-red-500" : ""}>
+                                                    <SelectValue placeholder="Select a teacher" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <ScrollArea className="h-48">
+                                                        {loadingTeachers ? (
+                                                            <div className="p-2 text-center text-muted-foreground">Loading...</div>
+                                                        ) : filteredTeachers.length === 0 ? (
+                                                            <div className="p-2 text-center text-muted-foreground">No teachers found</div>
+                                                        ) : (
+                                                            filteredTeachers.map(teacher => (
+                                                                <SelectItem key={teacher.id} value={teacher.id}>
+                                                                    <div className="flex flex-col items-start">
+                                                                        <span className="font-medium">{teacher.name}</span>
+                                                                        <span className="text-sm text-muted-foreground">{teacher.email}</span>
+                                                                    </div>
+                                                                </SelectItem>
+                                                            ))
+                                                        )}
+                                                    </ScrollArea>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
                                         {errors.teacherId && <p className="text-sm text-red-500">{errors.teacherId}</p>}
                                     </div>
                                 </div>
@@ -372,7 +605,7 @@ export default function CreateCourseDialog({ onSuccess }: { onSuccess?: () => vo
                                             <Popover>
                                                 <PopoverTrigger className={buttonVariants({
                                                     variant: "outline",
-                                                    className: `w-full justify-start text-left font-normal ${errors.startDate ? "border-red-500" : ""}`
+                                                    className: `w-full justify-start text-left font-normal ${errors.endDate ? "border-red-500" : ""}`
                                                 })}>
                                                     <CalendarIcon className="mr-2 h-4 w-4" />
                                                     {endDate ? format(endDate, "PPP") : "Select end date"}
@@ -382,14 +615,85 @@ export default function CreateCourseDialog({ onSuccess }: { onSuccess?: () => vo
                                                         mode="single"
                                                         selected={endDate}
                                                         onSelect={setEndDate}
-                                                        initialFocus
-                                                        disabled={(date) => date < new Date() || (startDate && date <= startDate)}
+                                                        disabled={(date) => !!(date < new Date() || (startDate && date <= startDate))}
                                                     />
                                                 </PopoverContent>
                                             </Popover>
                                             {errors.endDate && <p className="text-sm text-red-500">{errors.endDate}</p>}
                                         </div>
                                     </div>
+
+                                    {/* Bulk Time Setting */}
+                                    <Card className="bg-blue-50/50 border-blue-200">
+                                        <CardContent className="pt-4">
+                                            <div className="space-y-3">
+                                                <div className="flex items-center gap-2">
+                                                    <Zap className="h-4 w-4 text-blue-600" />
+                                                    <Label className="text-blue-800 font-medium">Quick Time Setup</Label>
+                                                </div>
+
+                                                <div className="flex flex-wrap gap-2">
+                                                    {timePresets.map((preset, idx) => (
+                                                        <Button
+                                                            key={idx}
+                                                            size="sm"
+                                                            variant="outline"
+                                                            onClick={() => applyTimePreset(preset)}
+                                                            className="text-xs"
+                                                        >
+                                                            {preset.label}
+                                                        </Button>
+                                                    ))}
+                                                </div>
+
+                                                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                                    <div className="space-y-1">
+                                                        <Label className="text-xs">Start Time</Label>
+                                                        <Input
+                                                            type="time"
+                                                            value={bulkTimeStart}
+                                                            onChange={e => setBulkTimeStart(e.target.value)}
+                                                            className="text-sm"
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-1">
+                                                        <Label className="text-xs">End Time</Label>
+                                                        <Input
+                                                            type="time"
+                                                            value={bulkTimeEnd}
+                                                            onChange={e => setBulkTimeEnd(e.target.value)}
+                                                            className="text-sm"
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-1">
+                                                        <Label className="text-xs">Apply to Days</Label>
+                                                        <Button
+                                                            size="sm"
+                                                            onClick={applyBulkTime}
+                                                            disabled={!bulkTimeStart || !bulkTimeEnd || selectedDaysForBulk.length === 0}
+                                                            className="w-full"
+                                                        >
+                                                            Apply ({selectedDaysForBulk.length})
+                                                        </Button>
+                                                    </div>
+                                                </div>
+
+                                                <div className="flex flex-wrap gap-2">
+                                                    {weekdays.map(({ key, short }) => (
+                                                        <Button
+                                                            key={key}
+                                                            size="sm"
+                                                            variant={selectedDaysForBulk.includes(key) ? "default" : "outline"}
+                                                            onClick={() => toggleDayForBulk(key)}
+                                                            className="text-xs"
+                                                        >
+                                                            {short}
+                                                        </Button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
 
                                     <div className="space-y-3">
                                         <Label>Weekly Schedule *</Label>
@@ -398,16 +702,29 @@ export default function CreateCourseDialog({ onSuccess }: { onSuccess?: () => vo
                                                 <div key={day} className="border rounded-lg p-3 space-y-2 bg-muted/20">
                                                     <div className="flex items-center justify-between">
                                                         <span className="font-medium text-sm">{label}</span>
-                                                        {schedule[day] && (
-                                                            <Button
-                                                                size="sm"
-                                                                variant="ghost"
-                                                                onClick={() => clearScheduleDay(day)}
-                                                                className="h-6 w-6 p-0 text-muted-foreground hover:text-red-500"
-                                                            >
-                                                                <X className="h-3 w-3" />
-                                                            </Button>
-                                                        )}
+                                                        <div className="flex gap-1">
+                                                            {schedule[day] && (
+                                                                <Button
+                                                                    size="sm"
+                                                                    variant="ghost"
+                                                                    onClick={() => copyScheduleToAll(day)}
+                                                                    className="h-6 w-6 p-0 text-muted-foreground hover:text-blue-500"
+                                                                    title="Copy to all days"
+                                                                >
+                                                                    <Copy className="h-3 w-3" />
+                                                                </Button>
+                                                            )}
+                                                            {schedule[day] && (
+                                                                <Button
+                                                                    size="sm"
+                                                                    variant="ghost"
+                                                                    onClick={() => clearScheduleDay(day)}
+                                                                    className="h-6 w-6 p-0 text-muted-foreground hover:text-red-500"
+                                                                >
+                                                                    <X className="h-3 w-3" />
+                                                                </Button>
+                                                            )}
+                                                        </div>
                                                     </div>
                                                     <div className="flex gap-2">
                                                         <div className="flex-1 space-y-1">
@@ -471,32 +788,44 @@ export default function CreateCourseDialog({ onSuccess }: { onSuccess?: () => vo
                                         </div>
                                     )}
 
-                                    <ScrollArea className={`h-48 border rounded-md p-3 ${errors.students ? "border-red-500" : ""}`}>
-                                        {loadingData ? (
-                                            <div className="flex items-center justify-center h-full text-muted-foreground">
-                                                Loading students...
-                                            </div>
-                                        ) : students.length === 0 ? (
-                                            <div className="flex items-center justify-center h-full text-muted-foreground">
-                                                No students available
-                                            </div>
-                                        ) : (
-                                            <div className="space-y-2">
-                                                {students.map(student => (
-                                                    <div key={student.id} className="flex items-center gap-3 p-2 rounded hover:bg-muted/50">
-                                                        <Checkbox
-                                                            checked={selectedStudents.includes(student.id)}
-                                                            onCheckedChange={() => toggleStudent(student.id)}
-                                                        />
-                                                        <div className="flex-1 min-w-0">
-                                                            <div className="font-medium truncate">{student.name}</div>
-                                                            <div className="text-sm text-muted-foreground truncate">{student.email}</div>
+                                    <div className="space-y-2">
+                                        <div className="relative">
+                                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                            <Input
+                                                placeholder="Search students by name or email..."
+                                                value={studentSearch}
+                                                onChange={e => setStudentSearch(e.target.value)}
+                                                className="pl-10"
+                                            />
+                                        </div>
+
+                                        <ScrollArea className={`h-48 border rounded-md p-3 ${errors.students ? "border-red-500" : ""}`}>
+                                            {loadingStudents ? (
+                                                <div className="flex items-center justify-center h-full text-muted-foreground">
+                                                    Loading students...
+                                                </div>
+                                            ) : filteredStudents.length === 0 ? (
+                                                <div className="flex items-center justify-center h-full text-muted-foreground">
+                                                    {studentSearch ? "No students found matching your search" : "No students available"}
+                                                </div>
+                                            ) : (
+                                                <div className="space-y-2">
+                                                    {filteredStudents.map(student => (
+                                                        <div key={student.id} className="flex items-center gap-3 p-2 rounded hover:bg-muted/50">
+                                                            <Checkbox
+                                                                checked={selectedStudents.includes(student.id)}
+                                                                onCheckedChange={() => toggleStudent(student.id)}
+                                                            />
+                                                            <div className="flex-1 min-w-0">
+                                                                <div className="font-medium truncate">{student.name}</div>
+                                                                <div className="text-sm text-muted-foreground truncate">{student.email}</div>
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        )}
-                                    </ScrollArea>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </ScrollArea>
+                                    </div>
                                     {errors.students && <p className="text-sm text-red-500">{errors.students}</p>}
                                 </div>
                             </CardContent>
@@ -521,7 +850,7 @@ export default function CreateCourseDialog({ onSuccess }: { onSuccess?: () => vo
                         </Button>
                         <Button
                             onClick={handleSubmit}
-                            disabled={loading || loadingData}
+                            disabled={loading || loadingTeachers || loadingStudents}
                             className="flex-1 sm:flex-none"
                         >
                             {loading ? "Creating..." : "Create Course"}

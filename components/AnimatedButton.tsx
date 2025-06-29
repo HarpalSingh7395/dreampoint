@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 import { HTMLAttributes, ReactNode } from "react";
 
-const AnimatedButton = ({ className, children, variant = 'primary', href = '#', ...props }: { children: ReactNode, variant?: "primary" | "secondary", href?: string } & HTMLAttributes<HTMLButtonElement>) => {
+const AnimatedButton = ({ className, children, variant = 'primary', ...props }: { children: ReactNode, variant?: "primary" | "secondary", href?: string } & HTMLAttributes<HTMLButtonElement>) => {
   const baseClasses = "relative inline-flex items-center justify-center px-8 py-4 text-lg font-semibold rounded-full transition-all duration-300 transform hover:-translate-y-1 hover:shadow-2xl overflow-hidden group";
   
   const variants = {

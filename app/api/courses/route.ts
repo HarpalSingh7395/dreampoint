@@ -1,7 +1,21 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { prisma } from "@/prisma"
+import { NextRequest, NextResponse } from "next/server"
+import { addDays, isBefore } from "date-fns"
+import { Class, CourseType, Prisma } from "@prisma/client"
 
-const prisma = new PrismaClient()
+const weekdayToNumber: Record<string, number> = {
+  SUNDAY: 0,
+  MONDAY: 1,
+  TUESDAY: 2,
+  WEDNESDAY: 3,
+  THURSDAY: 4,
+  FRIDAY: 5,
+  SATURDAY: 6
+}
+
+function isValidTimeString(str: string) {
+  return /^([01]\d|2[0-3]):[0-5]\d$/.test(str)
+}
 
 // GET /api/courses - List all courses with filters
 export async function GET(request: NextRequest) {
@@ -9,13 +23,13 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const teacherId = searchParams.get('teacherId')
     const type = searchParams.get('type')
-    const status = searchParams.get('status')
+    // const status = searchParams.get('status')
 
-    const where: any = {}
+    const where: Prisma.CourseWhereInput = {}
     
     if (teacherId) where.teacherId = teacherId
-    if (type) where.type = type
-    if (status) where.status = status
+    if (type) where.type = type as CourseType
+    // if (status) where.status = status
 
     const courses = await prisma.course.findMany({
       where,
@@ -78,80 +92,167 @@ export async function GET(request: NextRequest) {
   }
 }
 
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { 
-      title, 
-      description, 
-      type, 
-      startDate, 
-      endDate, 
+    const {
+      title,
+      description,
+      type,
+      startDate,
+      endDate,
       teacherId,
-      schedule 
+      substituteTeacherId,
+      fee,
+      capacity,
+      schedule,
+      studentIds = []
     } = body
 
-    // Validate required fields
     if (!title || !type || !startDate || !endDate || !teacherId) {
       return NextResponse.json(
-        { success: false, error: 'Missing required fields' },
+        { success: false, error: "Missing required fields" },
         { status: 400 }
       )
     }
 
-    // Verify teacher exists and has TEACHER role
+    for (const s of schedule ?? []) {
+      if (!weekdayToNumber[s.dayOfWeek]) {
+        return NextResponse.json({ success: false, error: `Invalid day: ${s.dayOfWeek}` }, { status: 400 })
+      }
+      if (!isValidTimeString(s.startTime) || !isValidTimeString(s.endTime)) {
+        return NextResponse.json({ success: false, error: `Invalid time for ${s.dayOfWeek}` }, { status: 400 })
+      }
+    }
+
+    // Validate teacher
     const teacher = await prisma.user.findFirst({
       where: {
         id: teacherId,
-        role: 'TEACHER',
-        profileStatus: 'APPROVED'
+        role: "TEACHER",
+        profileStatus: "APPROVED"
       }
     })
 
     if (!teacher) {
-      return NextResponse.json(
-        { success: false, error: 'Invalid teacher or teacher not approved' },
-        { status: 400 }
-      )
+      return NextResponse.json({ success: false, error: "Invalid teacher" }, { status: 400 })
     }
 
-    // Create course with schedule
-    const course = await prisma.course.create({
-      data: {
-        title,
-        description,
-        type,
-        startDate: new Date(startDate),
-        endDate: new Date(endDate),
-        teacherId,
-        schedule: {
-          create: schedule?.map((s: any) => ({
-            dayOfWeek: s.dayOfWeek,
-            startTime: s.startTime,
-            endTime: s.endTime
-          })) || []
+    // Validate substitute if provided
+    if (substituteTeacherId) {
+      const sub = await prisma.user.findFirst({
+        where: {
+          id: substituteTeacherId,
+          role: "TEACHER",
+          profileStatus: "APPROVED"
         }
-      },
-      include: {
-        teacher: {
-          select: {
-            id: true,
-            name: true,
-            email: true
+      })
+
+      if (!sub) {
+        return NextResponse.json({ success: false, error: "Invalid substitute teacher" }, { status: 400 })
+      }
+    }
+
+    const result = await prisma.$transaction(async (tx) => {
+      const course = await tx.course.create({
+        data: {
+          title,
+          description,
+          type,
+          startDate: new Date(startDate),
+          endDate: new Date(endDate),
+          teacherId,
+          fee: fee ? parseFloat(fee) : undefined,
+          capacity,
+          schedule: {
+            create: schedule?.map((s: {
+              dayOfWeek: string
+              startTime: string
+              endTime: string
+            }) => ({
+              dayOfWeek: s.dayOfWeek,
+              startTime: s.startTime,
+              endTime: s.endTime
+            })) ?? []
           }
         },
-        schedule: true
+        include: {
+          schedule: true
+        }
+      })
+
+      const classData: Omit<Class, 'id'>[] = []
+      const start = new Date(startDate)
+      const end = new Date(endDate)
+
+      for (let d = new Date(start); isBefore(d, addDays(end, 1)); d = addDays(d, 1)) {
+        const currentDay = d.getDay()
+
+        for (const sched of course.schedule) {
+          if (weekdayToNumber[sched.dayOfWeek] === currentDay) {
+
+            // Prevent overlapping for this teacher
+            const overlap = await tx.class.findFirst({
+              where: {
+                teacherId: teacherId,
+                date: d,
+                AND: [
+                  { startTime: { lt: sched.endTime } },
+                  { endTime: { gt: sched.startTime } }
+                ]
+              }
+            })
+
+            if (!overlap) {
+              classData.push({
+                date: d,
+                startTime: sched.startTime,
+                endTime: sched.endTime,
+                courseId: course.id,
+                teacherId: teacherId,
+                status: "SCHEDULED",
+                replacementFor: null,
+                cancellationReason: null
+              })
+            }
+          }
+        }
+      }
+
+      if (classData.length > 0) {
+        await tx.class.createMany({ data: classData })
+      }
+
+      // Enroll students if present
+      if (studentIds.length > 0) {
+        await tx.enrollment.createMany({
+          data: studentIds.map((studentId: string) => ({
+            studentId,
+            courseId: course.id
+          })),
+          skipDuplicates: true
+        })
+      }
+
+      return {
+        course,
+        generatedClasses: classData.length,
+        enrolledStudents: studentIds.length
       }
     })
 
     return NextResponse.json({
       success: true,
-      data: course
+      data: result.course,
+      generatedClasses: result.generatedClasses,
+      enrolledStudents: result.enrolledStudents
     }, { status: 201 })
+
   } catch (error) {
-    console.error('Error creating course:', error)
+    console.error("Course creation error:", error)
     return NextResponse.json(
-      { success: false, error: 'Failed to create course' },
+      { success: false, error: "Failed to create course" },
       { status: 500 }
     )
   }

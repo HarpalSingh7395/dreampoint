@@ -9,5 +9,5 @@ client
 export const storage = new Storage(client);
 
 export const account = new Account(client);
-export { ID } from 'appwrite';
+export { ID };
 

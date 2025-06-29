@@ -180,7 +180,7 @@ export default function TeacherDashboard() {
           <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="courses">My Courses</TabsTrigger>
-            <TabsTrigger value="schedule">Today's Schedule</TabsTrigger>
+            <TabsTrigger value="schedule">{`Today's Schedule`}</TabsTrigger>
             <TabsTrigger value="students">Students</TabsTrigger>
             <TabsTrigger value="earnings">Earnings</TabsTrigger>
             <TabsTrigger value="feedback">Feedback</TabsTrigger>
@@ -236,7 +236,7 @@ export default function TeacherDashboard() {
             {/* Today's Schedule */}
             <Card>
               <CardHeader>
-                <CardTitle>Today's Schedule</CardTitle>
+                <CardTitle>{`Today's Schedule`}</CardTitle>
                 <CardDescription>Your classes for today</CardDescription>
               </CardHeader>
               <CardContent>
@@ -340,7 +340,7 @@ export default function TeacherDashboard() {
           <TabsContent value="schedule" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Today's Classes</CardTitle>
+                <CardTitle>{`Today's Classes`}</CardTitle>
                 <CardDescription>Your scheduled classes for today</CardDescription>
               </CardHeader>
               <CardContent>

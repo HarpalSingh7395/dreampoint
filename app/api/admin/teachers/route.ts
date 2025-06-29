@@ -1,6 +1,6 @@
 import { prisma } from "@/prisma"
 import { NextRequest, NextResponse } from "next/server"
-import { Role } from "@prisma/client"
+import { Prisma, ProfileStatus, Role } from "@prisma/client"
 
 export async function GET(req: NextRequest) {
   const searchParams = req.nextUrl.searchParams
@@ -9,12 +9,12 @@ export async function GET(req: NextRequest) {
   const status = searchParams.get("status")
   const deleted = searchParams.get("deleted")
 
-  const where: any = {
+  const where: Prisma.UserWhereInput = {
     role: Role.TEACHER,
   }
 
   if (status && status !== "all") {
-    where.profileStatus = status
+    where.profileStatus = status as ProfileStatus
   }
 
   if (deleted === "deleted") {

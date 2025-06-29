@@ -206,6 +206,8 @@ model Course {
   schedule     Schedule[]
   enrollments  Enrollment[]
   classes      Class[]
+  fee         Float?
+  capacity    Int?
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
 }

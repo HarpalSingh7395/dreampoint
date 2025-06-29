@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic"
 import { prisma } from "@/prisma"
+import { Prisma, ProfileStatus, Role } from "@prisma/client"
 import { NextRequest, NextResponse } from "next/server"
 
 export async function GET(req: NextRequest) {
@@ -12,14 +13,14 @@ export async function GET(req: NextRequest) {
     const deleted = searchParams.get("deleted")?.toLowerCase() // expecting 'active' or 'deleted'
     const role = searchParams.get("role")?.toUpperCase()
 
-    const where: any = {}
+    const where: Prisma.UserWhereInput = {}
 
     if (status) {
-      where.profileStatus = status
+      where.profileStatus = status as ProfileStatus
     }
 
     if (role) {
-      where.role = role
+      where.role = role as Role
     }
 
     // Handle deleted filter

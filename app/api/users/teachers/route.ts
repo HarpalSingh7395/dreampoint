@@ -1,4 +1,5 @@
 import { prisma } from "@/prisma"
+import { Prisma } from "@prisma/client"
 import { NextRequest, NextResponse } from "next/server"
 
 export async function GET(request: NextRequest) {
@@ -7,7 +8,7 @@ export async function GET(request: NextRequest) {
     const specialization = searchParams.get('specialization')
     const subjects = searchParams.get('subjects')
 
-    const where: any = {
+    const where: Prisma.UserWhereInput = {
       role: 'TEACHER',
       profileStatus: 'APPROVED'
     }

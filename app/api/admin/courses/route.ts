@@ -1,98 +1,182 @@
 import { prisma } from "@/prisma"
 import { NextRequest, NextResponse } from "next/server"
-import * as yup from "yup"
+import { addDays, isBefore } from "date-fns"
+import { Class, CourseType, Prisma } from "@prisma/client"
 
-const timeRegex = /^([0-1]\d|2[0-3]):([0-5]\d)$/
+const weekdayToNumber: Record<string, number> = {
+  SUNDAY: 0,
+  MONDAY: 1,
+  TUESDAY: 2,
+  WEDNESDAY: 3,
+  THURSDAY: 4,
+  FRIDAY: 5,
+  SATURDAY: 6
+}
 
-const scheduleSchema = yup
-  .object({
-    dayOfWeek: yup
-      .mixed<"MONDAY" | "TUESDAY" | "WEDNESDAY" | "THURSDAY" | "FRIDAY" | "SATURDAY" | "SUNDAY">()
-      .oneOf([
-        "MONDAY",
-        "TUESDAY",
-        "WEDNESDAY",
-        "THURSDAY",
-        "FRIDAY",
-        "SATURDAY",
-        "SUNDAY",
-      ])
-      .required(),
-    start: yup.string().matches(timeRegex, "Invalid start time").required(),
-    end: yup.string().matches(timeRegex, "Invalid end time").required(),
-  })
-  .test("time-logic", "End time must be after start time", (value) => {
-    if (!value?.start || !value?.end) return true
-    const s = new Date(`2000-01-01T${value.start}:00`)
-    const e = new Date(`2000-01-01T${value.end}:00`)
-    return s < e
-  })
+function isValidTimeString(str: string) {
+  return /^([01]\d|2[0-3]):[0-5]\d$/.test(str)
+}
 
-const courseSchema = yup.object({
-  title: yup.string().trim().required("Title is required"),
-  description: yup.string().trim().required("Description is required"),
-  type: yup.mixed<"PERSONAL" | "GROUP">().oneOf(["PERSONAL", "GROUP"]).required(),
-  teacherId: yup.string().required("Teacher ID is required"),
-  startDate: yup.date().typeError("Invalid start date").required("Start date is required"),
-  endDate: yup
-    .date()
-    .typeError("Invalid end date")
-    .required("End date is required")
-    .when("startDate", (startDate: Date, schema: any) => schema.min(startDate, "End date must be after start date")),
-  schedule: yup.array().of(scheduleSchema).min(1, "At least one schedule entry is required"),
-  studentIds: yup.array().of(yup.string()).when("type", {
-    is: "GROUP",
-    then: (schema) => schema.min(1, "At least one student is required for group courses"),
-    otherwise: (schema) => schema.optional(),
-  }),
-})
-
-export async function POST(req: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
-    const body = await req.json()
-    const validated = await courseSchema.validate(body, { abortEarly: false })
-    const { title, description, type, teacherId, startDate, endDate, schedule, studentIds } = validated
+    const body = await request.json()
+    const {
+      title,
+      description,
+      type,
+      startDate,
+      endDate,
+      teacherId,
+      substituteTeacherId,
+      fee,
+      capacity,
+      schedule,
+      studentIds = []
+    } = body
 
-    const course = await prisma.course.create({
-      data: {
-        title,
-        description,
-        type,
-        teacherId,
-        startDate,
-        endDate,
-        schedule: {
-          create: schedule.map((s) => ({
-            dayOfWeek: s.dayOfWeek,
-            startTime: s.start,
-            endTime: s.end,
-          })),
-        },
-        enrollments: {
-          create: studentIds?.map((id) => ({ student: { connect: { id } } })) || [],
-        },
-      },
-      include: {
-        teacher: true,
-        schedule: true,
-        enrollments: {
-          include: { student: true },
-        },
-      },
-    })
-
-    return NextResponse.json({ success: true, data: course })
-  } catch (err: any) {
-    if (err instanceof yup.ValidationError) {
-      const errors = err.inner.reduce((acc: Record<string, string>, e) => {
-        acc[e.path ?? "form"] = e.message
-        return acc
-      }, {})
-      return NextResponse.json({ success: false, errors }, { status: 400 })
+    if (!title || !type || !startDate || !endDate || !teacherId) {
+      return NextResponse.json(
+        { success: false, error: "Missing required fields" },
+        { status: 400 }
+      )
     }
 
-    console.error("Error creating course:", err)
-    return NextResponse.json({ success: false, error: "Internal server error" }, { status: 500 })
+    for (const s of schedule ?? []) {
+      if (weekdayToNumber[s.dayOfWeek]  === undefined) {
+        return NextResponse.json(
+          { success: false, error: `Invalid day: ${s.dayOfWeek}` },
+          { status: 400 }
+        )
+      }
+      if (!isValidTimeString(s.start) || !isValidTimeString(s.end)) {
+        return NextResponse.json(
+          { success: false, error: `Invalid time for ${s.dayOfWeek}` },
+          { status: 400 }
+        )
+      }
+    }
+
+    // Validate teacher
+    const teacher = await prisma.user.findFirst({
+      where: {
+        id: teacherId,
+        role: "TEACHER",
+        profileStatus: "APPROVED"
+      }
+    })
+
+    if (!teacher) {
+      return NextResponse.json(
+        { success: false, error: "Invalid teacher" },
+        { status: 400 }
+      )
+    }
+
+    // Validate substitute if provided
+    if (substituteTeacherId) {
+      const sub = await prisma.user.findFirst({
+        where: {
+          id: substituteTeacherId,
+          role: "TEACHER",
+          profileStatus: "APPROVED"
+        }
+      })
+
+      if (!sub) {
+        return NextResponse.json(
+          { success: false, error: "Invalid substitute teacher" },
+          { status: 400 }
+        )
+      }
+    }
+
+    const result = await prisma.$transaction(async (tx) => {
+      const course = await tx.course.create({
+        data: {
+          title,
+          description,
+          type,
+          startDate: new Date(startDate),
+          endDate: new Date(endDate),
+          teacherId,
+          fee: fee ? parseFloat(fee) : undefined,
+          capacity: capacity ? parseInt(capacity, 10) : undefined,
+          schedule: {
+            create: schedule?.map((s: {
+              dayOfWeek: string,
+              start: string,
+              end: string
+            }) => ({
+              dayOfWeek: s.dayOfWeek,
+              startTime: s.start,
+              endTime: s.end
+            })) ?? []
+          }
+        },
+        include: {
+          schedule: true
+        }
+      })
+
+      const classData: Omit<Class, "id">[] = []
+      const start = new Date(startDate)
+      const end = new Date(endDate)
+
+      for (let d = new Date(start); isBefore(d, addDays(end, 1)); d = addDays(d, 1)) {
+        const currentDay = d.getDay()
+
+        for (const sched of course.schedule) {
+          if (weekdayToNumber[sched.dayOfWeek] === currentDay) {
+            classData.push({
+              date: d,
+              startTime: sched.startTime,
+              endTime: sched.endTime,
+              courseId: course.id,
+              teacherId: teacherId,
+              status: "SCHEDULED",
+              replacementFor: null,
+              cancellationReason: null
+            })
+          }
+        }
+      }
+
+      if (classData.length > 0) {
+        await tx.class.createMany({ data: classData })
+      }
+
+      if (studentIds.length > 0) {
+        await tx.enrollment.createMany({
+          data: studentIds.map((studentId: string) => ({
+            studentId,
+            courseId: course.id
+          })),
+          skipDuplicates: true
+        })
+      }
+
+      return {
+        course,
+        generatedClasses: classData.length,
+        enrolledStudents: studentIds.length
+      }
+    })
+
+    return NextResponse.json(
+      {
+        success: true,
+        data: result.course,
+        generatedClasses: result.generatedClasses,
+        enrolledStudents: result.enrolledStudents
+      },
+      { status: 201 }
+    )
+  } catch (error) {
+    console.error("Course creation error:", error)
+    return NextResponse.json(
+      { success: false, error: "Failed to create course" },
+      { status: 500 }
+    )
   }
 }
 
@@ -106,12 +190,12 @@ export async function GET(req: NextRequest) {
 
   try {
     // Build where clause based on filters
-    const where: any = {}
-    
+    const where: Prisma.CourseWhereInput = {}
+
     if (type && type !== "all") {
-      where.type = type
+      where.type = type as CourseType
     }
-    
+
     if (teacherId && teacherId !== "all") {
       where.teacherId = teacherId
     }
@@ -187,7 +271,7 @@ export async function GET(req: NextRequest) {
       const isActive = course.startDate <= now && course.endDate >= now
       const isUpcoming = course.startDate > now
       const isCompleted = course.endDate < now
-      
+
       let status = 'completed'
       if (isUpcoming) status = 'upcoming'
       else if (isActive) status = 'active'
@@ -201,7 +285,7 @@ export async function GET(req: NextRequest) {
         ...course,
         status,
         isActive,
-        isUpcoming, 
+        isUpcoming,
         isCompleted,
         studentCount: course._count.enrollments,
         totalClasses: course._count.classes,
@@ -209,15 +293,15 @@ export async function GET(req: NextRequest) {
         scheduledClasses,
         cancelledClasses,
         progressPercentage: totalClasses > 0 ? Math.round((completedClasses / totalClasses) * 100) : 0,
-        scheduleDisplay: course.schedule.map(s => 
+        scheduleDisplay: course.schedule.map(s =>
           `${s.dayOfWeek.charAt(0) + s.dayOfWeek.slice(1).toLowerCase()} ${s.startTime}-${s.endTime}`
         ).join(', '),
       }
     })
 
-    return NextResponse.json({ 
-      success: true, 
-      data: coursesWithStats, 
+    return NextResponse.json({
+      success: true,
+      data: coursesWithStats,
       total,
       pagination: {
         page,

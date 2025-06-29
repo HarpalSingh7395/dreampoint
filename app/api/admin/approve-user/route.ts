@@ -2,8 +2,6 @@ import { sendMailgunEmail } from "@/lib/mailgun"
 import { prisma } from "@/prisma"
 import { NextResponse } from "next/server"
 
-const FROM_EMAIL = `Team My Pathshaala <${process.env.MAILGUN_FROM_ADDRESS}>`
-
 export async function POST(req: Request) {
   const { id } = await req.json()
 

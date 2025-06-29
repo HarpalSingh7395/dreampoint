@@ -155,11 +155,18 @@ export async function POST(req: Request) {
             user: result
         }, { status: 201 })
 
-    } catch (err: any) {
+    } catch (err: unknown) {
         console.error("Profile completion error:", err)
+
+        const message =
+            err instanceof Error ? err.message : "Internal Server Error"
+
         return NextResponse.json(
-            { error: err?.message || "Internal Server Error" },
-            { status: err.message?.includes("User already exists") ? 400 : 500 }
+            { error: message },
+            {
+                status:
+                    message.includes("User already exists") ? 400 : 500,
+            }
         )
     }
 }
