@@ -1,5 +1,5 @@
 "use client"
-import React from 'react'
+import React, { ReactNode } from 'react'
 import { usePathname } from 'next/navigation'
 import { SidebarTrigger } from './ui/sidebar'
 import { Separator } from './ui/separator'
@@ -25,7 +25,7 @@ export default function BreadcrumbBar() {
   };
 
   // Function to format path segments into readable labels
-  const formatSegment = (segment) => {
+  const formatSegment = (segment: string) => {
     return segment
       .split('-')
       .map(word => word.charAt(0).toUpperCase() + word.slice(1))
@@ -45,7 +45,7 @@ export default function BreadcrumbBar() {
       ]
     }
 
-    const breadcrumbs = []
+    const breadcrumbs: ReactNode[] = []
     let currentPath = ''
 
     pathSegments.forEach((segment, index) => {
