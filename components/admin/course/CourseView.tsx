@@ -358,6 +358,10 @@ export default function CourseView({
                                     ))}
                                 </div>
                             </div>
+                            <div>
+                                    <Label className="text-sm font-medium text-muted-foreground">Course Fee</Label>
+                                    <p className="mt-1 flex items-center gap-2">₹{courseData.fee}</p>
+                                </div>
                         </CardContent>
                     </Card>
 
@@ -513,10 +517,6 @@ export default function CourseView({
                                 <div className="flex items-center gap-2 text-sm">
                                     <UserIcon className="h-4 w-4 text-muted-foreground" />
                                     <span>{courseData.teacher.experience} years experience</span>
-                                </div>
-                                <div className="flex items-center gap-2 text-sm">
-                                    <span className="text-muted-foreground">Rate:</span>
-                                    <span>₹{courseData.teacher.hourlyRate}/hour</span>
                                 </div>
                             </div>
                         </CardContent>
