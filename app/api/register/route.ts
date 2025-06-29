@@ -102,7 +102,7 @@ export async function POST(req: Request) {
                         teachingGrades,
                         role: userType === 'teacher' ? Role.TEACHER : Role.STUDENT,
                         extraQualifications,
-                        profileStatus: ProfileStatus.PENDING_APPROVAL
+                        profileStatus: userType === 'teacher' ? ProfileStatus.PENDING_APPROVAL : ProfileStatus.APPROVED
                     }
                 })
                 : await tx.user.create({

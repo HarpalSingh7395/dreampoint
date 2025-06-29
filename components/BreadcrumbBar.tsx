@@ -14,6 +14,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { LogOut } from 'lucide-react'
 import { signOut } from 'next-auth/react'
+import UserAvatarDropdown from './UserProfileDropdown'
 
 export default function BreadcrumbBar() {
   const pathname = usePathname()
@@ -94,7 +95,7 @@ export default function BreadcrumbBar() {
           </BreadcrumbList>
         </Breadcrumb>
       </div>
-      <Button
+      {/* <Button
         variant="outline"
         size="sm"
         onClick={handleSignOut}
@@ -102,7 +103,8 @@ export default function BreadcrumbBar() {
       >
         <LogOut className="h-4 w-4" />
         <span>Logout</span>
-      </Button>
+      </Button> */}
+      <UserAvatarDropdown />
     </div>
   )
 }

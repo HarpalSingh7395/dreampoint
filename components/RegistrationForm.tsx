@@ -161,7 +161,7 @@ export function RegistrationForm({
             const result = await res.json();
             await update({
                 role: data.userType === 'teacher' ? Role.TEACHER : Role.STUDENT,
-                profileStatus: ProfileStatus.PENDING_APPROVAL
+                profileStatus: data.userType === 'teacher' ? ProfileStatus.PENDING_APPROVAL : ProfileStatus.APPROVED
             })
             if (!res.ok) {
                 console.error("Registration failed:", result.error || result);

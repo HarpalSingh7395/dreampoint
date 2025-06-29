@@ -21,6 +21,10 @@ const data = {
           title: "Users",
           url: "/admin/users",
         },
+        {
+          title: "Course",
+          url: "/admin/courses",
+        },
       ],
     },
   ],
